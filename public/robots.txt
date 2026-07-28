@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Lead endpoint — nothing to crawl.
+Disallow: /api/
+
+Sitemap: https://webuyhouseshouston.com/sitemap-index.xml

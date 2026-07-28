@@ -1,0 +1,75 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Section from '@/components/Section.astro';
+import FaqAccordion from '@/components/FaqAccordion.astro';
+import OfferForm from '@/components/OfferForm.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { FAQS } from '@/data/content';
+import { CONTACT } from '@/config/site';
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+---
+
+<BaseLayout
+  title="FAQ — Frequently Asked Questions About Selling To Us"
+  description="Answers to the questions we're asked most: how we determine our offer, whether there are fees, how we differ from an agent, and whether there's any obligation."
+  schema={[faqSchema]}
+>
+  <PageHero
+    eyebrow="FAQ"
+    title="Maybe you have a few questions"
+    lead="That's okay; most people do. Here's a quick collection of the questions people ask us, along with our answers. If yours isn't here, just call — we'll answer it."
+    crumbs={[{ label: 'FAQ' }]}
+  />
+
+  <Section tone="white">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7 xl:col-span-8">
+        <FaqAccordion faqs={FAQS} />
+
+        <div class="mt-10 rounded-2xl bg-ivory-100 p-7 sm:p-8">
+          <h2 class="font-display text-xl font-semibold tracking-tight text-navy-900">
+            Still have a question?
+          </h2>
+          <p class="mt-2.5 leading-relaxed text-ink-muted">
+            Don't hesitate to contact us, or give us a call, and we'll be happy to
+            answer it for you. There's no obligation and we won't put you on a
+            list.
+          </p>
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+            <a href={CONTACT.phoneHref} class="btn btn-navy btn-md">
+              <Icon name="phone" class="h-4 w-4" />
+              {CONTACT.phone}
+            </a>
+            <a href="/contact-us/" class="btn btn-outline btn-md">
+              Send us a message
+              <Icon name="arrow-right" class="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <aside class="lg:col-span-5 xl:col-span-4">
+        <div class="lg:sticky lg:top-28">
+          <OfferForm
+            source="faq"
+            heading="Want to see a number?"
+            subheading="Fill out the quick form for a no-hassle, no-obligation all-cash offer."
+          />
+        </div>
+      </aside>
+    </div>
+  </Section>
+
+  <CtaBand />
+</BaseLayout>

@@ -1,0 +1,30 @@
+---
+interface Props {
+  tone?: 'ivory' | 'white' | 'navy' | 'navy-deep';
+  /** Vertical rhythm. `tight` for stacked sections, `loose` for feature moments. */
+  space?: 'tight' | 'normal' | 'loose';
+  id?: string;
+  class?: string;
+}
+
+const { tone = 'ivory', space = 'normal', id, class: className = '' } = Astro.props;
+
+const tones: Record<string, string> = {
+  ivory: 'bg-ivory text-ink',
+  white: 'bg-white text-ink',
+  navy: 'bg-navy-900 text-white grain',
+  'navy-deep': 'bg-navy-950 text-white grain',
+};
+
+const spacing: Record<string, string> = {
+  tight: 'py-14 lg:py-16',
+  normal: 'py-16 lg:py-24',
+  loose: 'py-20 lg:py-32',
+};
+---
+
+<section id={id} class:list={['relative overflow-hidden', tones[tone], spacing[space], className]}>
+  <div class="container-page relative">
+    <slot />
+  </div>
+</section>

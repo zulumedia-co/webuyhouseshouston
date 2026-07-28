@@ -1,0 +1,139 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { TESTIMONIALS, INDUSTRY_QUOTE } from '@/data/testimonials';
+import { CONTACT, SITE } from '@/config/site';
+---
+
+<BaseLayout
+  title="Testimonials — What Others Say About We Buy Houses Houston"
+  description="It's important to us that the homeowners we work with have a great experience. Read what people we've worked with have said, or share your own experience."
+>
+  <PageHero
+    eyebrow="Testimonials"
+    title="What others say…"
+    lead="It's important to us that the homeowners we work with have a great experience. In the end, we're not happy if we're not able to provide you with the solution you want."
+    crumbs={[{ label: 'Testimonials' }]}
+  />
+
+  <Section tone="white">
+    {TESTIMONIALS.length > 0 ? (
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {TESTIMONIALS.map((t) => (
+          <figure class="flex flex-col rounded-xl bg-ivory-100 p-7">
+            <span class="font-display text-5xl leading-none text-brass-500/40" aria-hidden="true">
+              &ldquo;
+            </span>
+            <blockquote class="mt-3 flex-1 text-pretty leading-relaxed text-ink-muted">
+              {t.quote}
+            </blockquote>
+            <figcaption class="mt-6 border-t border-hairline pt-5">
+              <span class="block font-display text-lg font-semibold tracking-tight text-navy-900">
+                {t.name}
+              </span>
+              <span class="mt-0.5 block text-sm text-ink-subtle">{t.location}</span>
+              {t.situation && (
+                <span class="mt-2 inline-flex rounded-full bg-brass-500/10 px-2.5 py-1 text-xs font-semibold text-brass-800">
+                  {t.situation}
+                </span>
+              )}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    ) : (
+      /* No published reviews yet. Rather than pad the page with invented
+         quotes, this states the position honestly and asks for real ones. */
+      <div class="mx-auto max-w-3xl">
+        <div class="rounded-2xl bg-ivory-100 p-8 text-center sm:p-12">
+          <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brass-500/12 text-brass-600">
+            <Icon name="heart" class="h-6 w-6" />
+          </span>
+          <h2 class="mt-6 text-balance font-display text-display-md font-semibold tracking-tight text-navy-900">
+            Have we worked together?
+          </h2>
+          <p class="mx-auto mt-4 max-w-xl text-pretty leading-relaxed text-ink-muted">
+            We're in the middle of collecting written reviews from the homeowners
+            we've worked with. If we've bought your house, we'd be grateful if
+            you'd tell us what the experience was like — good or bad. It helps
+            the next person in your situation decide who to trust.
+          </p>
+          <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <a href="/contact-us/" class="btn btn-primary btn-lg">
+              Share your experience
+              <Icon name="arrow-right" class="h-4 w-4" />
+            </a>
+            <a href={CONTACT.phoneHref} class="btn btn-outline btn-lg">
+              <Icon name="phone" class="h-4 w-4" />
+              {CONTACT.phone}
+            </a>
+          </div>
+        </div>
+
+        <p class="mt-8 text-center text-sm leading-relaxed text-ink-subtle">
+          We'd rather show you nothing than show you reviews we made up. If you're
+          weighing us against another buyer, ask both of us for references you can
+          actually call — and be wary of anyone whose testimonials have no names.
+        </p>
+      </div>
+    )}
+  </Section>
+
+  <!-- Industry context, clearly labelled as such. -->
+  <Section tone="ivory">
+    <SectionHeading
+      eyebrow="Industry perspective"
+      title="Why homeowners consider a cash buyer"
+      align="center"
+    />
+    <figure class="mx-auto mt-10 max-w-3xl rounded-2xl bg-white p-8 text-center shadow-card ring-1 ring-navy-900/[0.06] sm:p-12">
+      <blockquote class="text-pretty font-display text-xl leading-relaxed tracking-tight text-navy-900 sm:text-2xl">
+        &ldquo;{INDUSTRY_QUOTE.quote}&rdquo;
+      </blockquote>
+      <figcaption class="mt-6 text-sm text-ink-subtle">
+        <span class="font-semibold text-ink-muted">{INDUSTRY_QUOTE.source}</span>
+        <span class="mx-2" aria-hidden="true">·</span>
+        Industry commentary, not a customer review
+      </figcaption>
+    </figure>
+  </Section>
+
+  <Section tone="white">
+    <SectionHeading
+      eyebrow="How to check us out"
+      title="Do not take anyone's word for it — including ours"
+      align="center"
+      lead={`Selling a house is one of the largest financial decisions you will make. Here is how to verify any cash buyer in Houston, ${SITE.name} included.`}
+    />
+
+    <div class="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-3">
+      {[
+        {
+          title: 'Ask for references',
+          body: 'Ask for two or three recent sellers you can call. A buyer who has genuinely closed deals locally will have them.',
+        },
+        {
+          title: 'Ask which title company',
+          body: 'A legitimate buyer closes at a neutral, reputable title company. Anyone pushing a "kitchen table closing" is a red flag.',
+        },
+        {
+          title: 'Ask about proof of funds',
+          body: 'If someone is buying with cash, they can show you they have it. If they cannot, they are likely assigning your contract to someone else.',
+        },
+      ].map((item) => (
+        <div class="rounded-xl bg-ivory-100 p-6">
+          <h3 class="font-display text-lg font-semibold tracking-tight text-navy-900">
+            {item.title}
+          </h3>
+          <p class="mt-2.5 text-[0.9375rem] leading-relaxed text-ink-muted">{item.body}</p>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <CtaBand />
+</BaseLayout>

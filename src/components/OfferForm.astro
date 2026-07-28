@@ -1,0 +1,414 @@
+---
+import { CONTACT, PROMISE } from '@/config/site';
+
+/**
+ * The cash-offer lead form — the single most important component on the site.
+ *
+ * Two deliberate design decisions:
+ *
+ * 1. Two steps, address first. Asking for a phone number cold is the highest-
+ *    friction possible opener. Asking "what's the address?" is a low-commitment
+ *    question the visitor came to answer anyway, and once step one is done the
+ *    sunk-cost effect carries them through step two.
+ *
+ * 2. Progressive enhancement. The form is a real <form> with a real action, so
+ *    it still submits without JavaScript — it just posts both steps at once.
+ *    Leads are the business; they must not depend on a JS bundle loading.
+ */
+interface Props {
+  /** `light` renders on ivory, `dark` renders on navy. */
+  tone?: 'light' | 'dark';
+  heading?: string;
+  subheading?: string;
+  /** Where the lead came from, so Guillermo can see which page converts. */
+  source: string;
+  class?: string;
+  /** Adds the trust row under the form. */
+  showTrust?: boolean;
+}
+
+const {
+  tone = 'light',
+  heading = 'Get Your Fair Cash Offer',
+  subheading = `Tell us about the property. We'll get back to you within ${PROMISE.offerWindow} — no obligation, no fees, no repairs.`,
+  source,
+  class: className = '',
+  showTrust = true,
+} = Astro.props;
+
+const dark = tone === 'dark';
+const formId = `offer-form-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<div
+  data-offer-card
+  class:list={[
+    'relative overflow-hidden rounded-2xl',
+    dark
+      ? 'bg-navy-900 text-white shadow-lift ring-1 ring-white/10'
+      : 'bg-white shadow-card ring-1 ring-navy-900/[0.06]',
+    className,
+  ]}
+>
+  {dark && (
+    <div
+      class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brass-500/60 to-transparent"
+      aria-hidden="true"
+    ></div>
+  )}
+
+  <div class="p-6 sm:p-8">
+    <div class="mb-6">
+      <h2
+        class:list={[
+          'font-display text-2xl font-semibold tracking-tight sm:text-[1.75rem]',
+          dark ? 'text-white' : 'text-navy-900',
+        ]}
+      >
+        {heading}
+      </h2>
+      <p class:list={['mt-2 text-[0.9375rem] leading-relaxed', dark ? 'text-white/65' : 'text-ink-muted']}>
+        {subheading}
+      </p>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="mb-6 flex items-center gap-3" data-steps>
+      {[1, 2].map((n) => (
+        <div class="flex flex-1 items-center gap-3">
+          <span
+            class:list={[
+              'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors duration-300',
+              'data-[state=done]:bg-brass-500 data-[state=done]:text-navy-950',
+              'data-[state=active]:bg-brass-500 data-[state=active]:text-navy-950',
+              dark
+                ? 'data-[state=todo]:bg-white/10 data-[state=todo]:text-white/50'
+                : 'data-[state=todo]:bg-navy-900/8 data-[state=todo]:text-ink-subtle',
+            ]}
+            data-step-dot={n}
+            data-state={n === 1 ? 'active' : 'todo'}
+          >
+            {n}
+          </span>
+          <span
+            class:list={[
+              'text-xs font-medium uppercase tracking-[0.1em] transition-colors',
+              dark ? 'text-white/45' : 'text-ink-subtle',
+            ]}
+          >
+            {n === 1 ? 'Property' : 'Contact'}
+          </span>
+          {n === 1 && (
+            <span
+              class:list={['h-px flex-1', dark ? 'bg-white/12' : 'bg-navy-900/10']}
+              aria-hidden="true"
+            ></span>
+          )}
+        </div>
+      ))}
+    </div>
+
+    <form
+      id={formId}
+      method="POST"
+      action="/api/lead/"
+      novalidate
+      data-offer-form
+      data-source={source}
+    >
+      <input type="hidden" name="source" value={source} />
+      <input type="hidden" name="pagePath" value={Astro.url.pathname} />
+      <!-- Spam trap: bots fill hidden fields, humans never see them. -->
+      <div class="absolute left-[-9999px]" aria-hidden="true">
+        <label>
+          Do not fill this in
+          <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
+      <input type="hidden" name="renderedAt" data-rendered-at value="" />
+
+      <!-- ---------------- Step 1 ---------------- -->
+      <div data-panel="1" class="space-y-4">
+        <div>
+          <label class:list={['field-label', dark && 'text-white/70']} for={`${formId}-address`}>
+            Property Address
+          </label>
+          <input
+            id={`${formId}-address`}
+            name="address"
+            type="text"
+            required
+            autocomplete="street-address"
+            placeholder="123 Main St"
+            class:list={['field', dark && 'border-white/15 bg-white/5 text-white placeholder:text-white/35']}
+            data-validate="required"
+          />
+          <p class="mt-1.5 hidden text-sm text-danger" data-error-for="address"></p>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-[1fr_auto]">
+          <div>
+            <label class:list={['field-label', dark && 'text-white/70']} for={`${formId}-city`}>
+              City
+            </label>
+            <input
+              id={`${formId}-city`}
+              name="city"
+              type="text"
+              required
+              autocomplete="address-level2"
+              placeholder="Houston"
+              class:list={['field', dark && 'border-white/15 bg-white/5 text-white placeholder:text-white/35']}
+              data-validate="required"
+            />
+            <p class="mt-1.5 hidden text-sm text-danger" data-error-for="city"></p>
+          </div>
+          <div class="sm:w-32">
+            <label class:list={['field-label', dark && 'text-white/70']} for={`${formId}-zip`}>
+              ZIP
+            </label>
+            <input
+              id={`${formId}-zip`}
+              name="zip"
+              type="text"
+              inputmode="numeric"
+              autocomplete="postal-code"
+              placeholder="77002"
+              class:list={['field', dark && 'border-white/15 bg-white/5 text-white placeholder:text-white/35']}
+              data-validate="zip"
+            />
+            <p class="mt-1.5 hidden text-sm text-danger" data-error-for="zip"></p>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-lg w-full" data-next>
+          Continue
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- ---------------- Step 2 ---------------- -->
+      <div data-panel="2" class="hidden space-y-4">
+        <div>
+          <label class:list={['field-label', dark && 'text-white/70']} for={`${formId}-name`}>
+            Your Name
+          </label>
+          <input
+            id={`${formId}-name`}
+            name="name"
+            type="text"
+            required
+            autocomplete="name"
+            placeholder="Jane Doe"
+            class:list={['field', dark && 'border-white/15 bg-white/5 text-white placeholder:text-white/35']}
+            data-validate="required"
+          />
+          <p class="mt-1.5 hidden text-sm text-danger" data-error-for="name"></p>
+        </div>
+
+        <div>
+          <label class:list={['field-label', dark && 'text-white/70']} for={`${formId}-phone`}>
+            Phone
+          </label>
+          <input
+            id={`${formId}-phone`}
+            name="phone"
+            type="tel"
+            required
+            autocomplete="tel"
+            placeholder="(713) 555-0123"
+            class:list={['field', dark && 'border-white/15 bg-white/5 text-white placeholder:text-white/35']}
+            data-validate="phone"
+          />
+          <p class="mt-1.5 hidden text-sm text-danger" data-error-for="phone"></p>
+        </div>
+
+        <div>
+          <label class:list={['field-label', dark && 'text-white/70']} for={`${formId}-email`}>
+            Email <span class="font-normal normal-case tracking-normal text-ink-subtle">(optional)</span>
+          </label>
+          <input
+            id={`${formId}-email`}
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="jane@example.com"
+            class:list={['field', dark && 'border-white/15 bg-white/5 text-white placeholder:text-white/35']}
+            data-validate="email"
+          />
+          <p class="mt-1.5 hidden text-sm text-danger" data-error-for="email"></p>
+        </div>
+
+        <div>
+          <label class:list={['field-label', dark && 'text-white/70']} for={`${formId}-timeline`}>
+            How soon do you need to sell?
+          </label>
+          <select
+            id={`${formId}-timeline`}
+            name="timeline"
+            class:list={['field', dark && 'border-white/15 bg-white/5 text-white']}
+          >
+            <option value="">Select one…</option>
+            <option value="asap">As soon as possible</option>
+            <option value="30-days">Within 30 days</option>
+            <option value="60-90-days">Within 60–90 days</option>
+            <option value="exploring">Just exploring options</option>
+          </select>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="button" class:list={['btn btn-lg shrink-0', dark ? 'btn-ghost-light' : 'btn-outline']} data-back>
+            Back
+          </button>
+          <button type="submit" class="btn btn-primary btn-lg flex-1" data-submit>
+            <span data-submit-label>Get My Cash Offer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Submission failure fallback: never lose a lead silently. -->
+      <div
+        class="mt-4 hidden rounded-lg border border-danger/30 bg-danger/5 p-4 text-sm"
+        data-form-error
+        role="alert"
+      >
+        <p class:list={['font-medium', dark ? 'text-white' : 'text-navy-900']}>
+          Something went wrong sending your details.
+        </p>
+        <p class:list={['mt-1', dark ? 'text-white/70' : 'text-ink-muted']}>
+          Please call us directly at
+          <a href={CONTACT.phoneHref} class="font-semibold underline underline-offset-2">
+            {CONTACT.phone}
+          </a>
+          — we'll take your information over the phone.
+        </p>
+      </div>
+    </form>
+
+    {showTrust && (
+      <div
+        class:list={[
+          'mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-t pt-5 text-[0.8125rem]',
+          dark ? 'border-white/10 text-white/55' : 'border-hairline text-ink-subtle',
+        ]}
+      >
+        {[PROMISE.fees, PROMISE.commissions, PROMISE.repairs, 'No obligation'].map((item) => (
+          <span class="inline-flex items-center gap-1.5">
+            <svg class="h-3.5 w-3.5 text-brass-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            {item}
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
+
+<script>
+  type Rule = 'required' | 'phone' | 'email' | 'zip';
+
+  const validators: Record<Rule, (v: string) => string | null> = {
+    required: (v) => (v.trim() ? null : 'This field is required.'),
+    // Deliberately permissive: 10+ digits. Rejecting a real lead over
+    // formatting is far more costly than accepting a slightly odd number.
+    phone: (v) => {
+      const digits = v.replace(/\D/g, '');
+      if (!digits) return 'Please enter a phone number.';
+      return digits.length >= 10 ? null : 'Please enter a valid phone number.';
+    },
+    email: (v) => (!v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? null : 'Please enter a valid email address.'),
+    zip: (v) => (!v.trim() || /^\d{5}(-\d{4})?$/.test(v.trim()) ? null : 'Please enter a valid ZIP code.'),
+  };
+
+  document.querySelectorAll<HTMLFormElement>('[data-offer-form]').forEach((form) => {
+    const panels = {
+      1: form.querySelector<HTMLElement>('[data-panel="1"]')!,
+      2: form.querySelector<HTMLElement>('[data-panel="2"]')!,
+    };
+    const card = form.closest<HTMLElement>('[data-offer-card]');
+    const dots = card?.querySelectorAll<HTMLElement>('[data-step-dot]');
+    const errorBox = form.querySelector<HTMLElement>('[data-form-error]');
+
+    // Timestamp the render so the server can reject sub-second submissions.
+    const stamp = form.querySelector<HTMLInputElement>('[data-rendered-at]');
+    if (stamp) stamp.value = String(Date.now());
+
+    const showError = (field: HTMLElement, message: string | null) => {
+      const name = field.getAttribute('name');
+      const slot = form.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+      field.setAttribute('aria-invalid', message ? 'true' : 'false');
+      if (!slot) return;
+      slot.textContent = message ?? '';
+      slot.classList.toggle('hidden', !message);
+    };
+
+    const validatePanel = (panel: HTMLElement): boolean => {
+      let ok = true;
+      panel.querySelectorAll<HTMLInputElement>('[data-validate]').forEach((field) => {
+        const rule = field.dataset.validate as Rule;
+        const message = validators[rule]?.(field.value) ?? null;
+        showError(field, message);
+        if (message && ok) {
+          ok = false;
+          field.focus();
+        }
+      });
+      return ok;
+    };
+
+    // Clear an error as soon as the visitor starts fixing it.
+    form.querySelectorAll<HTMLInputElement>('[data-validate]').forEach((field) => {
+      field.addEventListener('input', () => {
+        if (field.getAttribute('aria-invalid') === 'true') showError(field, null);
+      });
+    });
+
+    const goTo = (step: 1 | 2) => {
+      panels[1].classList.toggle('hidden', step !== 1);
+      panels[2].classList.toggle('hidden', step !== 2);
+      dots?.forEach((dot) => {
+        const n = Number(dot.dataset.stepDot);
+        dot.dataset.state = n < step ? 'done' : n === step ? 'active' : 'todo';
+      });
+      panels[step].querySelector<HTMLElement>('input, select')?.focus();
+    };
+
+    form.querySelector('[data-next]')?.addEventListener('click', () => {
+      if (validatePanel(panels[1])) goTo(2);
+    });
+    form.querySelector('[data-back]')?.addEventListener('click', () => goTo(1));
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validatePanel(panels[2])) return;
+
+      const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+      const label = form.querySelector<HTMLElement>('[data-submit-label]')!;
+      const original = label.textContent;
+      submit.disabled = true;
+      label.textContent = 'Sending…';
+      errorBox?.classList.add('hidden');
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        // Preserve the address across the redirect so the thank-you page can
+        // confirm back what the visitor actually submitted.
+        const address = (form.querySelector('[name="address"]') as HTMLInputElement)?.value ?? '';
+        sessionStorage.setItem('wbhh:lastAddress', address);
+        window.location.href = '/thank-you/';
+      } catch {
+        submit.disabled = false;
+        label.textContent = original;
+        errorBox?.classList.remove('hidden');
+      }
+    });
+  });
+</script>

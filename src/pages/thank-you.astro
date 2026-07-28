@@ -1,0 +1,130 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import FaqAccordion from '@/components/FaqAccordion.astro';
+import Icon from '@/components/Icon.astro';
+import { CONTACT, SITE } from '@/config/site';
+import { FAQS } from '@/data/content';
+
+const thankYouFaqs = FAQS.filter((f) =>
+  /How are you different|fees or commissions|really bad shape|quickly can you actually close/.test(
+    f.question,
+  ),
+);
+---
+
+<BaseLayout
+  title="Thank You — We'll Be In Touch Within 24 Hours"
+  description="Thanks for telling us about your house. We'll review the details and call you within 24 hours."
+  noindex
+  hideMobileBar
+>
+  <section class="relative overflow-hidden bg-navy-900 grain">
+    <div
+      class="pointer-events-none absolute -left-32 -top-24 h-[30rem] w-[30rem] rounded-full bg-brass-500/[0.08] blur-3xl"
+      aria-hidden="true"
+    ></div>
+
+    <div class="container-page relative py-16 lg:py-24">
+      <div class="mx-auto max-w-2xl text-center">
+        <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brass-500 text-navy-950">
+          <Icon name="check" class="h-8 w-8" />
+        </span>
+
+        <h1 class="mt-8 text-balance font-display text-[2rem] font-semibold leading-[1.12] tracking-tight text-white sm:text-display-lg">
+          Thanks! So, what's next?
+        </h1>
+
+        <p class="mt-6 text-pretty text-lg leading-relaxed text-white/70">
+          Thanks for telling us a bit about your house. We'll dive into the
+          details and give you a call
+          <strong class="font-semibold text-white">within 24 hours</strong> to get
+          the last few bits of information we need, so we can make you a fair
+          all-cash offer this week.
+        </p>
+
+        <!-- Confirms back what they actually submitted, when JS captured it.
+             Reassures the visitor that the form really went through. -->
+        <p
+          class="mt-6 hidden rounded-xl border border-white/10 bg-white/[0.04] px-5 py-4 text-white/70"
+          data-submitted-address
+        >
+          We've got your details for
+          <strong class="font-semibold text-white" data-address-value></strong>.
+        </p>
+
+        <div class="mt-10 rounded-2xl border border-white/10 bg-white/[0.04] p-7">
+          <p class="text-sm text-white/60">
+            Keep your phone nearby — we'll be ringing from this number.
+          </p>
+          <a
+            href={CONTACT.phoneHref}
+            class="mt-2 inline-flex items-center gap-3 font-display text-4xl font-semibold tracking-tight text-white transition-colors hover:text-brass-300"
+          >
+            <Icon name="phone" class="h-7 w-7 text-brass-400" />
+            {CONTACT.phone}
+          </a>
+          <p class="mt-4 text-sm text-white/50">
+            Feel free to call us any time in the meantime if you have questions.
+          </p>
+        </div>
+
+        <p class="mt-8 font-display text-lg text-white/60">— {SITE.name}</p>
+      </div>
+    </div>
+  </section>
+
+  <Section tone="white">
+    <SectionHeading
+      eyebrow="While you wait"
+      title="Have questions? Great — we're glad you do."
+      align="center"
+      lead="Here are answers to the ones that come up most between the form and the phone call."
+    />
+    <div class="mx-auto mt-12 max-w-4xl">
+      <FaqAccordion faqs={thankYouFaqs} />
+    </div>
+
+    <div class="mx-auto mt-12 max-w-4xl rounded-2xl bg-ivory-100 p-7 sm:p-8">
+      <h2 class="font-display text-xl font-semibold tracking-tight text-navy-900">
+        How the rest of the process works
+      </h2>
+      <ol class="mt-5 space-y-4">
+        {[
+          "First, we'll give you a call to get a few more details about your house. Just basic stuff — nothing fancy or complicated. Just enough for us to know what we're dealing with so we can make a fair, fast, all-cash offer.",
+          "Next, if you're ready to have us buy your house based on our offer, we'll get the paperwork going with a local, trusted, neutral title company — so you can be confident there's no funny business going on.",
+          "Last, usually within a week if you need it that fast, you'll have the cash in your hand so you can move on, and we'll take the burdensome house off your hands.",
+        ].map((step, i) => (
+          <li class="flex gap-4">
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brass-500/15 text-sm font-semibold text-brass-700">
+              {i + 1}
+            </span>
+            <p class="leading-relaxed text-ink-muted">{step}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <div class="mt-12 text-center">
+      <a href="/blog/" class="btn btn-outline btn-lg">
+        Read our guides while you wait
+        <Icon name="arrow-right" class="h-4 w-4" />
+      </a>
+    </div>
+  </Section>
+</BaseLayout>
+
+<script>
+  // The offer form stashes the address before redirecting here.
+  const stored = sessionStorage.getItem('wbhh:lastAddress');
+  if (stored) {
+    const box = document.querySelector('[data-submitted-address]');
+    const value = document.querySelector('[data-address-value]');
+    if (box && value) {
+      value.textContent = stored;
+      box.classList.remove('hidden');
+    }
+    sessionStorage.removeItem('wbhh:lastAddress');
+  }
+</script>

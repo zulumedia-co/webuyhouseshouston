@@ -1,0 +1,46 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  crumbs?: Array<{ label: string; href?: string }>;
+  align?: 'left' | 'center';
+}
+
+const { eyebrow, title, lead, crumbs = [], align = 'left' } = Astro.props;
+---
+
+<section class="relative overflow-hidden bg-navy-900 grain">
+  <div
+    class="pointer-events-none absolute -left-32 top-0 h-[28rem] w-[28rem] rounded-full bg-brass-500/[0.07] blur-3xl"
+    aria-hidden="true"
+  ></div>
+
+  <div class="container-page relative pb-16 pt-12 lg:pb-24 lg:pt-16">
+    {crumbs.length > 0 && <Breadcrumbs items={crumbs} class="mb-8" />}
+
+    <div class:list={['max-w-3xl', align === 'center' && 'mx-auto text-center']}>
+      {eyebrow && (
+        <p class:list={['eyebrow eyebrow-light', align === 'center' && 'eyebrow-center']}>
+          {eyebrow}
+        </p>
+      )}
+      <h1
+        class:list={[
+          'text-balance font-display text-[2rem] font-semibold leading-[1.12] tracking-tight text-white sm:text-display-lg sm:leading-[1.08] lg:text-display-xl lg:leading-[1.05]',
+          eyebrow && 'mt-5',
+        ]}
+      >
+        {title}
+      </h1>
+      {lead && (
+        <p class="mt-6 text-pretty text-lg leading-relaxed text-white/65 lg:text-xl">
+          {lead}
+        </p>
+      )}
+      <slot />
+    </div>
+  </div>
+</section>

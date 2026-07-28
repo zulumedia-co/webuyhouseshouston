@@ -1,0 +1,166 @@
+---
+import '@/styles/global.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { SITE, CONTACT, ABOUT_BLURB } from '@/config/site';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Overrides the canonical URL. Defaults to the current page. */
+  canonical?: string;
+  /** Set on the thank-you page and any thin utility page. */
+  noindex?: boolean;
+  /** Extra JSON-LD blocks (Article, FAQPage, BreadcrumbList, ...). */
+  schema?: Record<string, unknown>[];
+  ogType?: 'website' | 'article';
+  /** Suppresses the sticky mobile call bar on pages that already end in a form. */
+  hideMobileBar?: boolean;
+}
+
+const {
+  title,
+  description = SITE.description,
+  canonical,
+  noindex = false,
+  schema = [],
+  ogType = 'website',
+  hideMobileBar = false,
+} = Astro.props;
+
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
+const fullTitle = title.includes(SITE.name) ? title : `${title} | ${SITE.name}`;
+
+/**
+ * LocalBusiness schema. This is a local-intent search business, so the NAP
+ * (name / address / phone) block is worth getting exactly right — it feeds
+ * Google's local pack. Values come from `site.ts`, never hardcoded here.
+ */
+const businessSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'RealEstateAgent',
+  '@id': `${SITE.url}/#business`,
+  name: SITE.name,
+  description: ABOUT_BLURB,
+  url: SITE.url,
+  telephone: CONTACT.phone,
+  priceRange: '$$',
+  areaServed: [
+    { '@type': 'City', name: 'Houston' },
+    { '@type': 'AdministrativeArea', name: 'Harris County' },
+  ],
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: `${CONTACT.address.street}, ${CONTACT.address.suite}`,
+    addressLocality: CONTACT.address.city,
+    addressRegion: CONTACT.address.stateAbbr,
+    postalCode: CONTACT.address.zip,
+    addressCountry: 'US',
+  },
+  ...(CONTACT.social.length > 0
+    ? { sameAs: CONTACT.social.map((s) => s.url) }
+    : {}),
+};
+
+const allSchema = [businessSchema, ...schema];
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content={SITE.locale} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+
+    <meta name="theme-color" content="#0b1b33" />
+    <meta name="format-detection" content="telephone=yes" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${SITE.name} Blog`}
+      href="/rss.xml"
+    />
+
+    {allSchema.map((s) => (
+      <script
+        type="application/ld+json"
+        set:html={JSON.stringify(s)}
+      />
+    ))}
+
+    <slot name="head" />
+  </head>
+
+  <body class="min-h-screen antialiased">
+    <a
+      href="#main"
+      class="sr-only-focusable absolute left-4 top-4 z-[100] rounded-lg bg-navy-900 px-4 py-2.5 text-sm font-semibold text-white shadow-lg"
+    >
+      Skip to content
+    </a>
+
+    <Header />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+
+    {!hideMobileBar && (
+      <>
+        {/* Sticky call bar on mobile only. Phone is the single strongest
+            conversion path for a distressed-seller audience, and it is the
+            only contact channel the business publishes. */}
+        <div
+          class="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-navy-900/95 px-4 py-3 backdrop-blur-md md:hidden"
+        >
+          <div class="flex items-center gap-3">
+            <a
+              href={CONTACT.phoneHref}
+              class="btn btn-primary btn-md flex-1"
+              data-analytics="mobile-bar-call"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Call {CONTACT.phone}
+            </a>
+            <a
+              href="/get-a-cash-offer-today/"
+              class="btn btn-ghost-light btn-md"
+              data-analytics="mobile-bar-offer"
+            >
+              Get Offer
+            </a>
+          </div>
+        </div>
+        {/* Spacer so the bar never covers the last line of the footer. */}
+        <div class="h-[4.5rem] md:hidden" aria-hidden="true"></div>
+      </>
+    )}
+  </body>
+</html>

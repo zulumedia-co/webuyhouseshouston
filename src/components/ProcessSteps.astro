@@ -1,0 +1,60 @@
+---
+import { PROCESS_STEPS } from '@/data/content';
+
+interface Props {
+  tone?: 'dark' | 'light';
+}
+const { tone = 'dark' } = Astro.props;
+const light = tone === 'light';
+---
+
+<ol class="relative grid gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+  <!-- Connecting rule behind the numbers, desktop only. Reads as one
+       continuous journey rather than four disconnected cards. -->
+  <div
+    class:list={[
+      'absolute left-0 right-0 top-7 hidden h-px lg:block',
+      light ? 'bg-white/12' : 'bg-navy-900/10',
+    ]}
+    aria-hidden="true"
+  ></div>
+
+  {PROCESS_STEPS.map((step) => (
+    <li class="relative">
+      <div
+        class:list={[
+          'relative flex h-14 w-14 items-center justify-center rounded-full font-display text-lg font-semibold ring-1',
+          light
+            ? 'bg-navy-800 text-brass-400 ring-white/15'
+            // brass-700: at 18px semibold this counts as small text for WCAG,
+            // so it needs 4.5:1 rather than 3:1.
+            : 'bg-ivory text-brass-700 ring-navy-900/10',
+        ]}
+      >
+        {step.number}
+      </div>
+
+      <h3
+        class:list={[
+          'mt-6 font-display text-xl font-semibold tracking-tight',
+          light ? 'text-white' : 'text-navy-900',
+        ]}
+      >
+        {step.title}
+      </h3>
+
+      <p class:list={['mt-3 text-[0.9375rem] leading-relaxed', light ? 'text-white/60' : 'text-ink-muted']}>
+        {step.body}
+      </p>
+
+      <p
+        class:list={[
+          'mt-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold',
+          light ? 'bg-white/8 text-brass-300' : 'bg-brass-500/10 text-brass-800',
+        ]}
+      >
+        {step.duration}
+      </p>
+    </li>
+  ))}
+</ol>

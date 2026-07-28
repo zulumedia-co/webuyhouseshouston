@@ -1,0 +1,61 @@
+---
+/**
+ * Typographic wordmark.
+ *
+ * The business has no logo asset — the legacy Carrot site rendered its name as
+ * plain text. Rather than invent a mascot, this is a proper typographic
+ * lockup: a fine brass roofline mark over a two-tier wordmark. It reads as a
+ * considered identity at any size and swaps out cleanly if Guillermo supplies
+ * real artwork later.
+ */
+interface Props {
+  variant?: 'dark' | 'light';
+  class?: string;
+}
+const { variant = 'dark', class: className = '' } = Astro.props;
+
+const primary = variant === 'light' ? 'text-white' : 'text-navy-900';
+// ink-muted, not ink-subtle: at 11px this is small text, and ink-subtle on
+// ivory only reaches 3.96:1 — under the 4.5:1 WCAG AA threshold.
+const secondary = variant === 'light' ? 'text-white/60' : 'text-ink-muted';
+---
+
+<span class={`inline-flex items-center gap-3 ${className}`}>
+  <svg
+    class="h-9 w-9 shrink-0 text-brass-500"
+    viewBox="0 0 40 40"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M6 18.5 20 7l14 11.5"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M9.75 21.5V32a1 1 0 0 0 1 1h18.5a1 1 0 0 0 1-1V21.5"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.55"
+    />
+    <path d="M17 33v-7.5h6V33" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+  </svg>
+
+  <span class="flex flex-col leading-none">
+    <span
+      class={`text-[0.6875rem] font-semibold uppercase tracking-[0.22em] ${secondary}`}
+    >
+      We Buy Houses
+    </span>
+    <span
+      class={`font-display text-[1.5rem] font-semibold leading-none tracking-[-0.02em] ${primary}`}
+      style="font-variation-settings: 'SOFT' 0, 'WONK' 0, 'opsz' 48;"
+    >
+      Houston
+    </span>
+  </span>
+</span>

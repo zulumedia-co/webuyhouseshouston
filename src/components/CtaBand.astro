@@ -1,0 +1,54 @@
+---
+import { CONTACT } from '@/config/site';
+import Icon from '@/components/Icon.astro';
+
+interface Props {
+  title?: string;
+  lead?: string;
+  /** Label for the primary button. */
+  cta?: string;
+  href?: string;
+}
+
+const {
+  title = 'What do you have to lose? Get started now.',
+  lead = 'We buy houses in any condition, anywhere in Houston, at any price. No commissions, no fees, and absolutely no obligation.',
+  cta = 'Get My Cash Offer',
+  href = '/get-a-cash-offer-today/',
+} = Astro.props;
+---
+
+<section class="relative overflow-hidden bg-navy-900 grain">
+  <!-- Soft brass bloom, kept very low opacity. Enough to give the flat navy
+       some depth without turning into a gradient. -->
+  <div
+    class="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brass-500/10 blur-3xl"
+    aria-hidden="true"
+  ></div>
+  <div
+    class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brass-500/40 to-transparent"
+    aria-hidden="true"
+  ></div>
+
+  <div class="container-page relative py-16 lg:py-20">
+    <div class="flex flex-col items-start gap-10 lg:flex-row lg:items-center lg:justify-between">
+      <div class="max-w-2xl">
+        <h2 class="text-balance font-display text-display-md font-semibold tracking-tight text-white">
+          {title}
+        </h2>
+        <p class="mt-4 text-pretty text-lg leading-relaxed text-white/65">{lead}</p>
+      </div>
+
+      <div class="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row lg:flex-col xl:flex-row">
+        <a href={href} class="btn btn-primary btn-lg" data-analytics="cta-band-offer">
+          {cta}
+          <Icon name="arrow-right" class="h-4 w-4" />
+        </a>
+        <a href={CONTACT.phoneHref} class="btn btn-ghost-light btn-lg" data-analytics="cta-band-call">
+          <Icon name="phone" class="h-4 w-4" />
+          {CONTACT.phone}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

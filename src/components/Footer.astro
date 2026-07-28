@@ -1,0 +1,126 @@
+---
+import Logo from '@/components/Logo.astro';
+import { CONTACT, FOOTER_NAV, ABOUT_BLURB, SITE } from '@/config/site';
+
+const year = new Date().getFullYear();
+const { address } = CONTACT;
+---
+
+<footer class="relative overflow-hidden bg-navy-950 text-white/70 grain">
+  <!-- Brass hairline: a single expensive-looking detail at the seam. -->
+  <div
+    class="h-px w-full bg-gradient-to-r from-transparent via-brass-500/50 to-transparent"
+    aria-hidden="true"
+  ></div>
+
+  <div class="container-page relative py-16 lg:py-20">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-8">
+      <div class="lg:col-span-4">
+        <Logo variant="light" />
+        <p class="mt-6 max-w-sm text-[0.9375rem] leading-relaxed text-white/60">
+          {ABOUT_BLURB}
+        </p>
+
+        <a
+          href={CONTACT.phoneHref}
+          class="group mt-8 inline-flex flex-col leading-tight"
+          data-analytics="footer-call"
+        >
+          <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brass-400">
+            Call Us Today
+          </span>
+          <span
+            class="font-display text-3xl font-semibold tracking-tight text-white transition-colors group-hover:text-brass-300"
+          >
+            {CONTACT.phone}
+          </span>
+        </a>
+
+        {CONTACT.email && (
+          <p class="mt-4 text-[0.9375rem]">
+            <a href={`mailto:${CONTACT.email}`} class="text-white/60 underline-offset-4 hover:text-white hover:underline">
+              {CONTACT.email}
+            </a>
+          </p>
+        )}
+      </div>
+
+      <div class="grid gap-10 sm:grid-cols-3 lg:col-span-6 lg:col-start-6">
+        {FOOTER_NAV.map((group) => (
+          <div>
+            <h2 class="font-sans text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white/40">
+              {group.heading}
+            </h2>
+            <ul class="mt-5 space-y-3">
+              {group.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="text-[0.9375rem] text-white/70 underline-offset-4 transition-colors hover:text-white hover:underline"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div class="lg:col-span-2 lg:col-start-11">
+        <h2 class="font-sans text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white/40">
+          Office
+        </h2>
+        <address class="mt-5 text-[0.9375rem] not-italic leading-relaxed text-white/70">
+          {address.street}<br />
+          {address.suite}<br />
+          {address.city}, {address.stateAbbr} {address.zip}
+        </address>
+
+        {CONTACT.social.length > 0 && (
+          <ul class="mt-6 flex flex-wrap gap-3">
+            {CONTACT.social.map((s) => (
+              <li>
+                <a
+                  href={s.url}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  class="text-[0.9375rem] text-white/70 underline-offset-4 hover:text-white hover:underline"
+                >
+                  {s.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+
+    <div
+      class="mt-14 flex flex-col gap-6 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="text-sm text-white/45">
+        &copy; {year} {SITE.name}. All rights reserved.
+      </p>
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+        <a href="/privacy/" class="text-white/45 underline-offset-4 transition-colors hover:text-white/80 hover:underline">
+          Privacy Policy
+        </a>
+        <a href="/contact-us/" class="text-white/45 underline-offset-4 transition-colors hover:text-white/80 hover:underline">
+          Contact
+        </a>
+        <a href="/rss.xml" class="text-white/45 underline-offset-4 transition-colors hover:text-white/80 hover:underline">
+          RSS
+        </a>
+      </div>
+    </div>
+
+    <p class="mt-8 max-w-4xl text-xs leading-relaxed text-white/30">
+      {SITE.name} is a real estate investment company. We are not real estate
+      agents and we do not list properties on the MLS. We purchase properties
+      directly with our own funds. Nothing on this website constitutes legal,
+      tax, or financial advice — please consult a qualified professional about
+      your specific situation.
+    </p>
+  </div>
+</footer>

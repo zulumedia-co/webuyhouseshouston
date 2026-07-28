@@ -1,0 +1,26 @@
+---
+import { SITUATIONS } from '@/data/content';
+import Icon from '@/components/Icon.astro';
+---
+
+<ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+  {SITUATIONS.map((situation) => (
+    <li
+      class="group relative overflow-hidden rounded-xl bg-white p-6 ring-1 ring-navy-900/[0.06] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card"
+    >
+      <span
+        class="pointer-events-none absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-brass-500 transition-transform duration-300 group-hover:scale-x-100"
+        aria-hidden="true"
+      ></span>
+
+      <span class="flex h-11 w-11 items-center justify-center rounded-lg bg-brass-500/10 text-brass-600">
+        <Icon name={situation.icon} class="h-5 w-5" />
+      </span>
+
+      <h3 class="mt-5 font-display text-lg font-semibold tracking-tight text-navy-900">
+        {situation.title}
+      </h3>
+      <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">{situation.body}</p>
+    </li>
+  ))}
+</ul>

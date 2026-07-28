@@ -1,0 +1,101 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import SituationsGrid from '@/components/SituationsGrid.astro';
+import OfferForm from '@/components/OfferForm.astro';
+import ProcessSteps from '@/components/ProcessSteps.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import { CONTACT } from '@/config/site';
+---
+
+<BaseLayout
+  title="Sell Your House Fast In Houston — Any Condition, Any Price"
+  description="We buy properties in any condition in Houston. Find out if your property qualifies for an all-cash offer — no pushy sales techniques, no obligation, 100% free."
+>
+  <PageHero
+    eyebrow="Sell your house"
+    title="We buy properties in any condition — find out if yours qualifies"
+    lead="We are specialists in solving real estate problems, and we do it with no pushy sales techniques and no obligation. It is 100% free, 100% no hassle."
+    crumbs={[{ label: 'Sell Your House' }]}
+  />
+
+  <Section tone="white">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        <SectionHeading
+          eyebrow="Every situation is different"
+          title="You might be here for any of these reasons"
+          lead="Whatever brought you here, there is a way through it. These are the situations we deal with every week."
+        />
+
+        <div class="mt-10 space-y-6 text-lg leading-relaxed text-ink-muted">
+          <p>
+            Sometimes people who own property simply have lives that are too busy
+            to take the time to do all of the things that typically need to be
+            done to prepare a house to sell on the market. If that describes you,
+            just let us know about the property you would like to be rid of and
+            sell your house fast for cash.
+          </p>
+          <p class="font-medium text-navy-900">
+            We help property owners just like you, in all kinds of situations.
+            From divorce, foreclosure, the death of a family member, burdensome
+            rental property, and all kinds of other situations. We buy houses in
+            Houston and surrounding areas and pay a fair cash price, fast.
+          </p>
+          <p>
+            Sometimes those who own property simply have lives that are too busy
+            to take the time to do all of the things that typically need to be
+            done to prepare a house to sell on the market — and if that describes
+            you, just let us know about the property you would like to be rid of.
+          </p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 xl:col-span-4 xl:col-start-9">
+        <div class="lg:sticky lg:top-28">
+          <OfferForm
+            source="sell-your-house"
+            heading="Does your property qualify?"
+            subheading="Tell us about it and we'll let you know within 24 hours."
+          />
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <Section tone="ivory">
+    <SectionHeading
+      eyebrow="Situations we help with"
+      title="No judgement about how you got here"
+      align="center"
+      lead="We provide win-win solutions to help homeowners get out of sticky situations — foreclosure, a burdensome property, probate, or anything else."
+    />
+    <div class="mt-12">
+      <SituationsGrid />
+    </div>
+
+    <p class="mx-auto mt-10 max-w-2xl text-center text-ink-muted">
+      Not on the list? It does not matter. Call us at
+      <a href={CONTACT.phoneHref} class="font-semibold text-navy-900 underline decoration-brass-500 underline-offset-4">
+        {CONTACT.phone}
+      </a>
+      and tell us what is going on — there is a good chance we have handled it before.
+    </p>
+  </Section>
+
+  <Section tone="navy">
+    <SectionHeading
+      eyebrow="How it works"
+      title="From first contact to cash in hand"
+      tone="light"
+      align="center"
+    />
+    <div class="mt-14">
+      <ProcessSteps tone="light" />
+    </div>
+  </Section>
+
+  <CtaBand />
+</BaseLayout>

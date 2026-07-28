@@ -1,0 +1,128 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import ProcessSteps from '@/components/ProcessSteps.astro';
+import OfferForm from '@/components/OfferForm.astro';
+import FaqAccordion from '@/components/FaqAccordion.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { FAQS } from '@/data/content';
+import { SITE } from '@/config/site';
+
+const processFaqs = FAQS.filter((f) =>
+  /listing my house on the MLS|determine the price|quickly can you actually close|really bad shape/.test(
+    f.question,
+  ),
+);
+
+const howToSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: `How to sell your house to ${SITE.name}`,
+  totalTime: 'P7D',
+  step: [
+    { '@type': 'HowToStep', position: 1, name: 'Tell us about your property' },
+    { '@type': 'HowToStep', position: 2, name: 'We set up a quick appointment' },
+    { '@type': 'HowToStep', position: 3, name: 'You receive a written offer' },
+    { '@type': 'HowToStep', position: 4, name: 'We close on your timeline' },
+  ],
+};
+---
+
+<BaseLayout
+  title="How It Works — How We Buy Houses In Houston"
+  description="Our process in four steps: tell us about the property, we set an appointment, you get a written no-obligation cash offer, and we close on your date — in as little as 7 days."
+  schema={[howToSchema]}
+>
+  <PageHero
+    eyebrow="How it works"
+    title="Selling your house can be a quick and simple process"
+    lead="We are not listing your house — we are the ones buying it. Because we pay cash, we can close quickly, or on whatever schedule suits you."
+    crumbs={[{ label: 'How It Works' }]}
+  />
+
+  <Section tone="white">
+    <ProcessSteps />
+
+    <div class="mt-16 grid gap-6 lg:grid-cols-3">
+      {[
+        {
+          icon: 'calendar' as const,
+          title: 'Timeframe',
+          body: 'Once we get your info we are usually able to make a fair all-cash offer within 24 hours. From there we can close as quickly as 7 days, or on your schedule — sometimes we can have a check in your hand the very same day.',
+        },
+        {
+          icon: 'cash' as const,
+          title: 'What it costs you',
+          body: 'Nothing. There are no fees and no commissions. We are not listing your home, we are buying it ourselves. We also pay all of the closing costs and other costs associated with the sale.',
+        },
+        {
+          icon: 'shield' as const,
+          title: 'Where we close',
+          body: 'At a local, trusted, neutral title company — so you can be confident there is no funny business. No kitchen-table closings, and no question about where the money is coming from.',
+        },
+      ].map((item) => (
+        <div class="rounded-xl bg-ivory-100 p-7">
+          <span class="flex h-11 w-11 items-center justify-center rounded-lg bg-brass-500/12 text-brass-600">
+            <Icon name={item.icon} class="h-5 w-5" />
+          </span>
+          <h2 class="mt-5 font-display text-xl font-semibold tracking-tight text-navy-900">
+            {item.title}
+          </h2>
+          <p class="mt-3 leading-relaxed text-ink-muted">{item.body}</p>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <Section tone="ivory">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-6">
+        <SectionHeading
+          eyebrow="No repairs, no cleaning"
+          title="We'll buy your house exactly as it stands"
+        />
+        <div class="mt-6 space-y-5 text-lg leading-relaxed text-ink-muted">
+          <p>
+            Because we pay cash, there are no fees like there are when you list
+            with an agent. That means you do not have to worry about extra costs,
+            coming out of pocket to sell your house, or even getting the property
+            ready for sale.
+          </p>
+          <p>
+            Do not worry about repairing or cleaning up. We will buy your house
+            in as-is condition — no matter how ugly or pretty it is, and no
+            matter the location.
+          </p>
+          <p class="font-medium text-navy-900">
+            We do not care how dirty the house is. We have seen worse. And if it
+            is a complete fixer-upper, even better — we love projects.
+          </p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-6 xl:col-span-5 xl:col-start-8">
+        <OfferForm
+          source="how-we-buy-houses"
+          heading="See what we can offer"
+          subheading="Send us some basic details about your house to get started."
+        />
+      </div>
+    </div>
+  </Section>
+
+  <Section tone="white">
+    <SectionHeading
+      eyebrow="Common questions"
+      title="Questions about the process"
+      align="center"
+    />
+    <div class="mx-auto mt-12 max-w-4xl">
+      <FaqAccordion faqs={processFaqs} />
+    </div>
+  </Section>
+
+  <CtaBand />
+</BaseLayout>

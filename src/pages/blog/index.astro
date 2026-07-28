@@ -1,0 +1,45 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import PostCard from '@/components/PostCard.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Pagination from '@/components/Pagination.astro';
+import { byNewest } from '@/lib/posts';
+import { PER_PAGE } from '@/lib/pagination';
+
+const posts = (await getCollection('blog')).sort(byNewest);
+const totalPages = Math.ceil(posts.length / PER_PAGE);
+
+const [feature, ...rest] = posts.slice(0, PER_PAGE);
+---
+
+<BaseLayout
+  title="Houston Real Estate Blog — Selling Advice & Market Insight"
+  description="Straight, practical advice on selling a house in Houston — foreclosure, probate, inherited property, repairs, liens, divorce and more. No fluff."
+>
+  <PageHero
+    eyebrow="The blog"
+    title="Straight answers about selling a house in Houston"
+    lead={`${posts.length} articles on foreclosure, probate, inherited property, repairs, liens, divorce, and everything else that makes selling complicated.`}
+    crumbs={[{ label: 'Blog' }]}
+  />
+
+  <div class="bg-white py-14 lg:py-20">
+    <div class="container-page">
+      {feature && (
+        <div class="mb-10">
+          <PostCard post={feature} variant="feature" />
+        </div>
+      )}
+
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {rest.map((post) => <PostCard post={post} />)}
+      </div>
+
+      <Pagination current={1} total={totalPages} class="mt-14" />
+    </div>
+  </div>
+
+  <CtaBand />
+</BaseLayout>

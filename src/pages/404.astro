@@ -1,0 +1,72 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostCard from '@/components/PostCard.astro';
+import Icon from '@/components/Icon.astro';
+import { CONTACT } from '@/config/site';
+import { byNewest } from '@/lib/posts';
+
+const recent = (await getCollection('blog')).sort(byNewest).slice(0, 3);
+---
+
+<BaseLayout title="Page Not Found" description="That page doesn't exist." noindex>
+  <section class="relative overflow-hidden bg-navy-900 grain">
+    <div
+      class="pointer-events-none absolute -left-32 -top-24 h-[28rem] w-[28rem] rounded-full bg-brass-500/[0.07] blur-3xl"
+      aria-hidden="true"
+    ></div>
+
+    <div class="container-page relative py-20 lg:py-28">
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="font-display text-display-2xl font-semibold tracking-tight text-brass-500/30">
+          404
+        </p>
+        <h1 class="mt-4 text-balance font-display text-[2rem] font-semibold leading-[1.12] tracking-tight text-white sm:text-display-lg">
+          We couldn't find that page
+        </h1>
+        <p class="mt-6 text-pretty text-lg leading-relaxed text-white/65">
+          The link may be out of date, or the page may have moved. If you were
+          looking for something specific, just give us a call — it is usually
+          faster than hunting for it.
+        </p>
+
+        <div class="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+          <a href="/get-a-cash-offer-today/" class="btn btn-primary btn-lg">
+            Get My Cash Offer
+            <Icon name="arrow-right" class="h-4 w-4" />
+          </a>
+          <a href={CONTACT.phoneHref} class="btn btn-ghost-light btn-lg">
+            <Icon name="phone" class="h-4 w-4" />
+            {CONTACT.phone}
+          </a>
+        </div>
+
+        <nav class="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm" aria-label="Helpful links">
+          {[
+            { label: 'Home', href: '/' },
+            { label: 'How It Works', href: '/how-we-buy-houses/' },
+            { label: 'Compare', href: '/compare/' },
+            { label: 'FAQ', href: '/faq/' },
+            { label: 'Blog', href: '/blog/' },
+            { label: 'Contact', href: '/contact-us/' },
+          ].map((link) => (
+            <a href={link.href} class="text-white/50 underline-offset-4 transition-colors hover:text-white hover:underline">
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <div class="bg-white py-14 lg:py-20">
+    <div class="container-page">
+      <h2 class="font-display text-2xl font-semibold tracking-tight text-navy-900">
+        Recent from the blog
+      </h2>
+      <div class="mt-8 grid gap-6 md:grid-cols-3">
+        {recent.map((post) => <PostCard post={post} />)}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

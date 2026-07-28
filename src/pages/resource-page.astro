@@ -1,0 +1,129 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import PostCard from '@/components/PostCard.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { RESOURCES } from '@/data/content';
+import { byNewest } from '@/lib/posts';
+
+const all = (await getCollection('blog')).sort(byNewest);
+
+/** Hand-picked guides grouped by the situation a visitor arrives with. */
+const guides = [
+  {
+    heading: 'Foreclosure',
+    slugs: [
+      'how-to-avoid-foreclosure-in-houston',
+      'foreclosure-notice-of-default-in-texas-what-is-it',
+      'what-is-a-pre-foreclosure',
+      'how-to-stop-the-bank-from-foreclosing-on-your-houston-house',
+    ],
+  },
+  {
+    heading: 'Inherited & probate property',
+    slugs: [
+      'how-to-sell-a-house-you-inherited-in-houston',
+      'the-probate-process-for-a-house-in-houston-texas',
+      'tax-consequences-when-selling-a-house-i-inherited-in-houston',
+      'can-a-house-be-sold-while-in-probate-in-houston-texas',
+    ],
+  },
+  {
+    heading: 'Houses that need work',
+    slugs: [
+      'how-to-sell-a-house-with-liens-in-houston',
+      'how-to-sell-a-house-with-code-violations-in-houston',
+      'how-to-sell-a-house-with-water-damage-in-houston',
+      'how-to-sell-a-house-with-mold-in-houston',
+    ],
+  },
+  {
+    heading: 'Weighing your options',
+    slugs: [
+      'should-you-list-with-an-agent-sell-fsbo-or-sell-to-an-investor',
+      'comparing-your-selling-options-in-houston',
+      'how-much-will-listing-your-house-really-cost-in-houston',
+      'selling-your-house-during-divorce-in-houston',
+    ],
+  },
+].map((group) => ({
+  heading: group.heading,
+  // Silently drop any slug that is not in the archive, so a rename can never
+  // produce a dead link on this page.
+  posts: group.slugs
+    .map((slug) => all.find((p) => p.id === slug))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p)),
+}));
+---
+
+<BaseLayout
+  title="Resources — Help Selling Your House Fast In Houston"
+  description="Guides and trusted outside resources to help you sell your house fast or avoid foreclosure in Houston, including free HUD counselling and FDIC foreclosure prevention tools."
+>
+  <PageHero
+    eyebrow="Resources"
+    title="Resources to help you sell your house fast"
+    lead="We work with homeowners every day who need to sell but can't do it the traditional way — and people going through foreclosure. Use us as a resource too."
+    crumbs={[{ label: 'Resources' }]}
+  />
+
+  <Section tone="white">
+    <SectionHeading
+      eyebrow="Start here"
+      title="Guides by situation"
+      lead="Written for the specific problem you're dealing with, not for search engines."
+    />
+
+    <div class="mt-12 space-y-14">
+      {guides.map((group) => (
+        <div>
+          <h3 class="font-display text-xl font-semibold tracking-tight text-navy-900">
+            {group.heading}
+          </h3>
+          <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {group.posts.map((post) => <PostCard post={post} />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <Section tone="ivory">
+    <SectionHeading
+      eyebrow="Outside resources"
+      title="Places to go that aren't us"
+      lead="These are independent, and none of them are trying to buy your house. If you are in a difficult spot, start with the free ones."
+    />
+
+    <div class="mt-12 grid gap-6 md:grid-cols-2">
+      {RESOURCES.map((resource) => (
+        <a
+          href={resource.href}
+          rel={resource.external ? 'noopener noreferrer' : undefined}
+          target={resource.external ? '_blank' : undefined}
+          class="group flex flex-col rounded-xl bg-white p-7 ring-1 ring-navy-900/[0.06] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card"
+        >
+          <h3 class="flex items-start justify-between gap-4 font-display text-lg font-semibold tracking-tight text-navy-900 transition-colors group-hover:text-brass-700">
+            {resource.title}
+            <Icon
+              name="arrow-right"
+              class="mt-1 h-4 w-4 shrink-0 -rotate-45 text-ink-subtle transition-transform group-hover:translate-x-0.5"
+            />
+          </h3>
+          <p class="mt-3 flex-1 text-[0.9375rem] leading-relaxed text-ink-muted">
+            {resource.body}
+          </p>
+        </a>
+      ))}
+    </div>
+  </Section>
+
+  <CtaBand
+    title="Would you rather just ask someone?"
+    lead="We'd be glad to answer your questions, help you understand your options, and walk you through how our home-buying service works — with a fair, no-obligation offer at the end of it."
+  />
+</BaseLayout>

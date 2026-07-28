@@ -1,0 +1,173 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import OfferForm from '@/components/OfferForm.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { CONTACT } from '@/config/site';
+---
+
+<BaseLayout
+  title="Avoiding Foreclosure In Houston — Know Your Options"
+  description="Facing foreclosure in Houston? You have more options than you think. Compare listing, selling for cash, and free HUD counselling — and stop foreclosure before the auction date."
+>
+  <PageHero
+    eyebrow="Avoiding foreclosure"
+    title="You have more options than you think"
+    lead="You aren't the first person to go through a foreclosure, and you won't be the last. So don't feel ashamed — it happens. The best thing you can do right now is understand your options."
+    crumbs={[{ label: 'Avoiding Foreclosure' }]}
+  />
+
+  <Section tone="white">
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="flex flex-col rounded-2xl bg-ivory-100 p-8 lg:p-10">
+        <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-navy-900/8 text-navy-900">
+          <Icon name="file" class="h-5 w-5" />
+        </span>
+        <h2 class="mt-6 font-display text-2xl font-semibold tracking-tight text-navy-900">
+          &ldquo;List my house for sale&rdquo;
+        </h2>
+        <ul class="mt-6 flex-1 space-y-3">
+          {[
+            'Have 4–6 months? Listing may put more in your pocket',
+            'Save your credit from the wreckage of a foreclosure',
+            'See if your situation qualifies',
+          ].map((item) => (
+            <li class="flex items-start gap-2.5 text-ink-muted">
+              <Icon name="check" class="mt-1 h-4 w-4 shrink-0 text-brass-600" />
+              {item}
+            </li>
+          ))}
+        </ul>
+        <a href="/contact-us/" class="btn btn-outline btn-lg mt-8">
+          Learn if listing is the best fit
+          <Icon name="arrow-right" class="h-4 w-4" />
+        </a>
+      </div>
+
+      <div class="relative flex flex-col overflow-hidden rounded-2xl bg-navy-900 p-8 grain lg:p-10">
+        <span
+          class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brass-500/60 to-transparent"
+          aria-hidden="true"></span>
+        <span class="relative flex h-12 w-12 items-center justify-center rounded-lg bg-brass-500/15 text-brass-400">
+          <Icon name="cash" class="h-5 w-5" />
+        </span>
+        <h2 class="relative mt-6 font-display text-2xl font-semibold tracking-tight text-white">
+          &ldquo;Get a fair cash offer today&rdquo;
+        </h2>
+        <ul class="relative mt-6 flex-1 space-y-3">
+          {[
+            'Let us know about your situation and your house',
+            "We'll evaluate it quickly — usually within 48 hours",
+            "You'll receive a fair win-win all-cash offer",
+          ].map((item) => (
+            <li class="flex items-start gap-2.5 text-white/70">
+              <Icon name="check" class="mt-1 h-4 w-4 shrink-0 text-brass-400" />
+              {item}
+            </li>
+          ))}
+        </ul>
+        <a href="/get-a-cash-offer-today/" class="btn btn-primary btn-lg relative mt-8">
+          Get a fair all-cash offer
+          <Icon name="arrow-right" class="h-4 w-4" />
+        </a>
+      </div>
+    </div>
+  </Section>
+
+  <Section tone="ivory">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        <SectionHeading
+          eyebrow="Want to stop foreclosure now?"
+          title="What actually happens, and where you can still act"
+        />
+        <div class="mt-8 space-y-5 text-lg leading-relaxed text-ink-muted">
+          <p>
+            For some people, selling the home is the best option — we'll make a
+            fair all-cash offer on your house today. Sometimes we're able to help
+            homeowners stop foreclosure completely. And sometimes the right answer
+            has nothing to do with us at all.
+          </p>
+          <p class="font-medium text-navy-900">
+            The one thing that never helps is waiting. Almost every option
+            available to you gets narrower as the auction date gets closer, so the
+            earlier you look at this, the more choices you have.
+          </p>
+        </div>
+
+        <div class="mt-10 space-y-4">
+          {[
+            {
+              title: 'Talk to a free HUD-approved counsellor',
+              body: 'This costs nothing and they are not trying to buy your house. They can review your situation, contact your lender on your behalf, and explain the programmes you may qualify for.',
+              href: 'https://www.hud.gov/i_want_to/talk_to_a_housing_counselor',
+              external: true,
+            },
+            {
+              title: 'Ask your lender about loss mitigation',
+              body: 'Forbearance, a repayment plan, or a loan modification may be available — particularly if the hardship was temporary and you can document it. Lenders generally prefer this to foreclosing.',
+            },
+            {
+              title: 'Sell before the auction date',
+              body: 'If there is equity in the house, selling it — to us or to anyone — is almost always better than letting it go to auction. A foreclosure stays on your credit for seven years and you lose whatever equity was left.',
+            },
+          ].map((option) => (
+            <div class="rounded-xl bg-white p-6 ring-1 ring-navy-900/[0.06]">
+              <h3 class="font-display text-lg font-semibold tracking-tight text-navy-900">
+                {option.title}
+              </h3>
+              <p class="mt-2 leading-relaxed text-ink-muted">{option.body}</p>
+              {option.href && (
+                <a
+                  href={option.href}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brass-700 underline-offset-4 hover:underline"
+                >
+                  Find a HUD counsellor
+                  <Icon name="arrow-right" class="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <p class="mt-8 rounded-xl border-l-2 border-brass-500 bg-white p-6 leading-relaxed text-ink-muted">
+          <strong class="font-semibold text-navy-900">A word of caution.</strong>
+          Foreclosure lists are public, which means distressed homeowners get
+          targeted. Be wary of anyone asking for an upfront fee, anyone who wants
+          you to sign over the deed while staying in the house, and anyone who
+          will not close at a reputable title company.
+        </p>
+      </div>
+
+      <div class="lg:col-span-5 xl:col-span-4 xl:col-start-9">
+        <div class="lg:sticky lg:top-28">
+          <OfferForm
+            source="avoiding-foreclosure"
+            heading="Let us look at your situation"
+            subheading="We'll evaluate it quickly — usually within 48 hours — and tell you honestly what we think your options are."
+          />
+          <div class="mt-6 rounded-xl bg-white p-6 ring-1 ring-navy-900/[0.06]">
+            <p class="text-sm text-ink-subtle">Would rather just talk?</p>
+            <a
+              href={CONTACT.phoneHref}
+              class="mt-1.5 inline-flex items-center gap-2 font-display text-2xl font-semibold tracking-tight text-navy-900 transition-colors hover:text-brass-600"
+            >
+              <Icon name="phone" class="h-5 w-5 text-brass-500" />
+              {CONTACT.phone}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <CtaBand
+    title="The sooner you look at this, the more options you have"
+    lead="Tell us what's going on. We'll give you a straight answer about whether we can help — and if we can't, we'll tell you who can."
+  />
+</BaseLayout>

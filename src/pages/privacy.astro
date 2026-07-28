@@ -1,0 +1,109 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import { SITE, CONTACT } from '@/config/site';
+
+/**
+ * Content is carried over from the legacy policy, lightly reorganised into
+ * sections. It is reproduced as the client published it — a privacy policy is
+ * a legal document and is not ours to rewrite. Flagged to the client that it
+ * predates CCPA/GDPR-style language and should get a lawyer's eye.
+ */
+const sections = [
+  {
+    heading: 'What information do we collect?',
+    paragraphs: [
+      'We collect information from you when you subscribe to our newsletter, fill out a form or submit property information.',
+      'We may collect information about your computer, including your IP address, operating system and browser type using Google Analytics. This is to improve browsing for everyone and does not identify any individual.',
+      'When ordering or registering on our site, as appropriate, you may be asked to enter your name, e-mail address, mailing address or phone number. You may, however, visit our site anonymously. We transfer information about you if We Buy Houses Houston is acquired by or merged with another company. In this event, We Buy Houses Houston will notify you before information about you is transferred and becomes subject to a different privacy policy.',
+    ],
+  },
+  {
+    heading: 'What do we use your information for?',
+    paragraphs: [
+      'Any of the information we collect from you may be used to process transactions and to send periodic emails.',
+      'Your information, whether public or private, will not be sold, exchanged, transferred, or given to any other company for any reason whatsoever, without your consent, other than for the express purpose of delivering the purchased product or service requested.',
+      'The email address you provide may be used to send you information, respond to inquiries, and/or other requests or questions.',
+    ],
+  },
+  {
+    heading: 'How do we protect your information?',
+    paragraphs: [
+      'We implement a variety of security measures to maintain the safety of your personal information when you enter, submit, or access your personal information.',
+    ],
+  },
+  {
+    heading: 'Do we disclose any information to outside parties?',
+    paragraphs: [
+      'We do not sell, trade, or otherwise transfer to outside parties your personally identifiable information. This does not include trusted third parties who assist us in operating our website, conducting our business, or servicing you, so long as those parties agree to keep this information confidential.',
+      'We may also release your information when we believe release is appropriate to comply with the law, enforce our site policies, or protect ours or others’ rights, property, or safety. However, non-personally identifiable visitor information may be provided to other parties for marketing, advertising, or other uses.',
+    ],
+  },
+  {
+    heading: 'Third party links',
+    paragraphs: [
+      'Occasionally, at our discretion, we may include or offer third party products or services on our website. These third party sites have separate and independent privacy policies. We therefore have no responsibility or liability for the content and activities of these linked sites. Nonetheless, we seek to protect the integrity of our site and welcome any feedback about these sites.',
+    ],
+  },
+  {
+    heading: 'Third party services',
+    paragraphs: [
+      'In general, the third-party providers used by us will only collect, use and disclose your information to the extent necessary to allow them to perform the services they provide to us.',
+      'However, certain third-party service providers, such as payment gateways and other payment transaction processors, have their own privacy policies in respect to the information we are required to provide to them for your purchase-related transactions. For these providers, we recommend that you read their privacy policies so you can understand the manner in which your personal information will be handled.',
+      'Certain providers may be located in or have facilities located in a different jurisdiction than either you or us. If you elect to proceed with a transaction that involves the services of a third-party service provider, then your information may become subject to the laws of the jurisdiction(s) in which that service provider or its facilities are located.',
+      'Once you leave our website or are redirected to a third-party website or application, you are no longer governed by this Privacy Policy or our website’s Terms of Service.',
+    ],
+  },
+  {
+    heading: 'Remarketing and advertising',
+    paragraphs: [
+      'We Buy Houses Houston may use third-party vendor re-marketing tracking cookies, including but not limited to the Google Ads tracking cookie. This means we may continue to show ads to you across the internet. We respect your privacy and are not collecting any identifiable information through the use of Google’s or any other third-party remarketing system.',
+      'Third-party vendors, including Facebook and Google, whose services we use will place cookies on web browsers in order to serve ads based on past visits to our website. This allows us to make special offers and continue to market our services to those who have shown interest.',
+      'We may also permit certain third party companies to help us tailor advertising that we think may be of interest to users, and to collect and use other data about user activities on our site and services.',
+    ],
+  },
+  {
+    heading: 'California Online Privacy Protection Act compliance',
+    paragraphs: [
+      'Because we value your privacy we have taken the necessary precautions to be in compliance with the California Online Privacy Protection Act. We therefore will not distribute your personal information to outside parties without your consent.',
+    ],
+  },
+  {
+    heading: 'Children’s Online Privacy Protection Act compliance',
+    paragraphs: [
+      'We are in compliance with the requirements of COPPA (Children’s Online Privacy Protection Act). We do not collect any information from anyone under 13 years of age.',
+    ],
+  },
+  {
+    heading: 'Contacting us',
+    paragraphs: [
+      `If there are any questions regarding this privacy policy you may contact us at ${CONTACT.phone}, or by post at ${CONTACT.address.street}, ${CONTACT.address.suite}, ${CONTACT.address.city}, ${CONTACT.address.state} ${CONTACT.address.zip}.`,
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Privacy Policy"
+  description={`How ${SITE.name} collects, uses and protects your information.`}
+>
+  <PageHero
+    eyebrow="Legal"
+    title="Privacy Policy"
+    lead="How we collect, use and protect the information you share with us."
+    crumbs={[{ label: 'Privacy Policy' }]}
+  />
+
+  <div class="bg-white py-14 lg:py-20">
+    <div class="container-prose">
+      <div class="prose-editorial">
+        {sections.map((section) => (
+          <>
+            <h2>{section.heading}</h2>
+            {section.paragraphs.map((p) => <p>{p}</p>)}
+          </>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>
