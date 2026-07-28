@@ -1,0 +1,23 @@
+# Build output
+dist/
+.vercel/
+.astro/
+
+# Dependencies
+node_modules/
+.npm-cache/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Import intermediates — regenerate with `npm run import:fetch`.
+# ~30 MB of scraped legacy HTML; the markdown in src/content/blog is the artifact.
+raw/
+raw-pages/
+
+# OS
+.DS_Store
+__pycache__/
+*.pyc
