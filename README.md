@@ -82,9 +82,12 @@ To reskin this for Guillermo's next site, the bulk of the work is
 
 ## Lead capture
 
-Forms post to `/api/lead`, which validates, filters spam, then hands off to a
-CRM adapter chosen by the `LEAD_ADAPTER` environment variable. See
-`.env.example`.
+Forms post to `/api/lead/`, which validates, filters spam, then hands off to a
+CRM adapter chosen by the `LEAD_ADAPTER` environment variable.
+
+**Production target is `flowtrack`** — app.zulumedia.co, a FlowTrack/CloseGPT
+white-label. The adapter is written. **See [`docs/crm-integration.md`](docs/crm-integration.md)
+for the exact form fields to create in the CRM and what to send back.**
 
 **This is unconfigured until you set `LEAD_ADAPTER`.** Out of the box it uses
 the `console` adapter, which logs the lead and does nothing else. The site will
@@ -124,29 +127,42 @@ visible difference.
 
 ---
 
-## Things the client needs to supply
+## Open items
 
-These are gaps in the source material, not oversights. Nothing has been invented
-to fill them:
+### Decided
 
-1. **Real testimonials.** The legacy testimonials page had *zero* customer
-   reviews — only a generic Forbes industry quote presented as if it were one.
-   `src/data/testimonials.ts` is intentionally empty; add entries and the page
-   switches from the "share your experience" state to a review grid.
-2. **An email address.** None is published anywhere on the legacy site.
-   `CONTACT.email` is `null` and the UI hides every email affordance until it is
-   set.
-3. **Social profiles.** The legacy site's only "social" links were Facebook and
-   Twitter *share* buttons. `CONTACT.social` is empty; the footer renders the
-   block only when it is populated.
-4. **A decision on the Vinita St listing.** `/property/homes-for-sale-in-tx-houston-77034-vinita-3br/`
-   was published in February 2017 and was still rendering as an active "For
-   Sale" listing. It is presented here as an archived past project and set to
-   `noindex`. Flip `archived` to `false` in that page if it is genuinely
-   available.
-5. **A lawyer's read of the privacy policy.** It is carried over verbatim
-   because a privacy policy is a legal document, but it predates current
-   CCPA/GDPR-style expectations.
+- **Testimonials: none exist, and none are invented.** The legacy page carried
+  zero customer reviews — only a generic Forbes industry quote presented as if
+  it were one. `src/data/testimonials.ts` is intentionally empty. Rather than
+  leave an apologetic gap, `/testimonials/` now leads with *how to vet any cash
+  buyer, including us* — six concrete checks. That is more useful than
+  testimonials and no competitor does it. **Add entries to
+  `src/data/testimonials.ts` and the page automatically switches to a review
+  grid**; the vetting content stays below it.
+- **Social profiles: deliberately none.** A page with four followers and no
+  posts reads as abandoned, which is the exact signal a distressed seller is
+  watching for. `CONTACT.social` is empty and the footer omits the block
+  entirely. Revisit when there is something real to post.
+- **The Vinita St listing is archived.** `/property/homes-for-sale-in-tx-houston-77034-vinita-3br/`
+  was published February 2017 and still rendered as an active "For Sale"
+  listing. It is now presented as a past project and set `noindex`. Flip
+  `archived` to `false` in that page if it is genuinely available.
+
+### Still needed
+
+1. **The CRM endpoint.** See [`docs/crm-integration.md`](docs/crm-integration.md).
+   Nothing reaches Guillermo until this is set.
+2. **An email address on the domain**, e.g. `offers@webuyhouseshouston.com`.
+   Set `CONTACT.email` in `src/config/site.ts` and every email affordance
+   appears automatically. Note `g@fastcashoffers.com` is already public on the
+   property page — a different domain, which reads as a disconnect.
+3. **A Google Business Profile.** The highest-leverage trust and local-SEO asset
+   for this business, and the right place to accumulate reviews — it feeds the
+   Maps pack that sits above organic results, and the `LocalBusiness` schema in
+   `BaseLayout.astro` is already built to support it.
+4. **A lawyer's read of the privacy policy.** Carried over verbatim because a
+   privacy policy is a legal document, but it predates current CCPA/GDPR-style
+   expectations.
 
 ---
 

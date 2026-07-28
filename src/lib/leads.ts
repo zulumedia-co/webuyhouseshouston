@@ -14,6 +14,8 @@ export interface Lead {
   phone: string;
   email: string;
   timeline: string;
+  /** Free-text from the contact form's "How can we help?" box. */
+  message: string;
   source: string;
   pagePath: string;
   submittedAt: string;
@@ -70,6 +72,7 @@ export function parseAndValidate(form: FormData, userAgent = ''): ValidationResu
       phone,
       email,
       timeline: get('timeline'),
+      message: get('message'),
       source: get('source') || 'unknown',
       pagePath: get('pagePath') || '/',
       submittedAt: new Date().toISOString(),
@@ -144,10 +147,76 @@ const goHighLevelAdapter: Adapter = async (lead, env) => {
       postalCode: lead.zip,
       state: 'TX',
       source: lead.source,
-      customField: { timeline: lead.timeline, pagePath: lead.pagePath },
+      customField: { timeline: lead.timeline, message: lead.message, pagePath: lead.pagePath },
     }),
   });
   if (!res.ok) throw new Error(`GoHighLevel responded ${res.status}`);
+};
+
+/**
+ * Splits a free-text name into first/last.
+ *
+ * Deliberately simple: first token is the first name, everything else is the
+ * surname. This handles "Maria de la Cruz" and "Jan van Dijk" correctly, and
+ * the failure mode for anything exotic is a slightly odd CRM record — never a
+ * dropped lead.
+ */
+function splitName(full: string): { first: string; last: string } {
+  const parts = full.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { first: '', last: '' };
+  if (parts.length === 1) return { first: parts[0], last: '' };
+  return { first: parts[0], last: parts.slice(1).join(' ') };
+}
+
+/**
+ * FlowTrack / CloseGPT — the engine behind app.zulumedia.co.
+ *
+ * Sends the flat, snake_case payload documented in `docs/crm-integration.md`.
+ * The CRM form must be created with those exact field names.
+ *
+ * Auth is sent whichever way the platform expects: set FLOWTRACK_API_KEY for a
+ * Bearer token, or leave it unset if the endpoint is an unauthenticated
+ * inbound webhook (the usual case for a per-form webhook URL).
+ */
+const flowTrackAdapter: Adapter = async (lead, env) => {
+  const url = env.FLOWTRACK_WEBHOOK_URL;
+  if (!url) throw new Error('FLOWTRACK_WEBHOOK_URL is not set');
+
+  const { first, last } = splitName(lead.name);
+
+  const payload: Record<string, string> = {
+    first_name: first,
+    last_name: last,
+    email: lead.email,
+    phone: lead.phone,
+    property_address: lead.address,
+    property_city: lead.city,
+    property_state: 'TX',
+    property_zip: lead.zip,
+    timeline: lead.timeline,
+    message: lead.message,
+    lead_source: lead.source,
+    page_path: lead.pagePath,
+    submitted_at: lead.submittedAt,
+  };
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (env.FLOWTRACK_API_KEY) {
+    headers.Authorization = `Bearer ${env.FLOWTRACK_API_KEY}`;
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    // Include the response body — CRM validation errors are the most likely
+    // failure here, and the message is what tells us which field is wrong.
+    const body = await res.text().catch(() => '');
+    throw new Error(`FlowTrack responded ${res.status}: ${body.slice(0, 300)}`);
+  }
 };
 
 /** Email fallback via Resend, for when there is no CRM endpoint yet. */
@@ -162,6 +231,7 @@ const resendAdapter: Adapter = async (lead, env) => {
     ['Email', lead.email || '—'],
     ['Property', `${lead.address}, ${lead.city} ${lead.zip}`.trim()],
     ['Timeline', lead.timeline || '—'],
+    ['Message', lead.message || '—'],
     ['Source', `${lead.source} (${lead.pagePath})`],
     ['Submitted', lead.submittedAt],
   ]
@@ -194,6 +264,7 @@ const consoleAdapter: Adapter = async (lead) => {
 };
 
 const ADAPTERS: Record<string, Adapter> = {
+  flowtrack: flowTrackAdapter,
   webhook: webhookAdapter,
   gohighlevel: goHighLevelAdapter,
   resend: resendAdapter,

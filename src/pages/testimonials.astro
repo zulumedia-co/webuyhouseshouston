@@ -46,39 +46,54 @@ import { CONTACT, SITE } from '@/config/site';
         ))}
       </div>
     ) : (
-      /* No published reviews yet. Rather than pad the page with invented
-         quotes, this states the position honestly and asks for real ones. */
+      /* No published reviews. Rather than pad the page with invented quotes —
+         or imply a review drive that isn't happening — this states the position
+         plainly and turns the page into something more useful than testimonials:
+         how to actually vet a cash buyer. That is genuinely differentiating,
+         because no competitor's testimonials page tells you to check them. */
       <div class="mx-auto max-w-3xl">
-        <div class="rounded-2xl bg-ivory-100 p-8 text-center sm:p-12">
-          <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brass-500/12 text-brass-600">
-            <Icon name="heart" class="h-6 w-6" />
+        <div class="rounded-2xl bg-ivory-100 p-8 sm:p-12">
+          <span class="flex h-14 w-14 items-center justify-center rounded-full bg-brass-500/12 text-brass-700">
+            <Icon name="shield" class="h-6 w-6" />
           </span>
           <h2 class="mt-6 text-balance font-display text-display-md font-semibold tracking-tight text-navy-900">
-            Have we worked together?
+            We'd rather show you nothing than show you reviews we wrote ourselves
           </h2>
-          <p class="mx-auto mt-4 max-w-xl text-pretty leading-relaxed text-ink-muted">
-            We're in the middle of collecting written reviews from the homeowners
-            we've worked with. If we've bought your house, we'd be grateful if
-            you'd tell us what the experience was like — good or bad. It helps
-            the next person in your situation decide who to trust.
+          <div class="mt-5 space-y-4 text-pretty leading-relaxed text-ink-muted">
+            <p>
+              We don't have published testimonials on this page yet. We could
+              easily fill it with anonymous five-star quotes — plenty of sites in
+              this business do, and you'd have no way of telling the difference.
+              We'd rather be straight with you.
+            </p>
+            <p class="font-medium text-navy-900">
+              So here's something more useful than a testimonial: exactly how to
+              check out any company offering to buy your house for cash,
+              including us.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-2xl border border-hairline bg-white p-8 sm:p-10">
+          <h3 class="font-display text-xl font-semibold tracking-tight text-navy-900">
+            Have we bought your house?
+          </h3>
+          <p class="mt-3 leading-relaxed text-ink-muted">
+            If we've worked together, we'd genuinely like to hear how it went —
+            good or bad. Honest feedback from someone who's been through it is
+            worth more to the next homeowner than anything we could write.
           </p>
-          <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <a href="/contact-us/" class="btn btn-primary btn-lg">
-              Share your experience
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+            <a href="/contact-us/" class="btn btn-primary btn-md">
+              Tell us how it went
               <Icon name="arrow-right" class="h-4 w-4" />
             </a>
-            <a href={CONTACT.phoneHref} class="btn btn-outline btn-lg">
+            <a href={CONTACT.phoneHref} class="btn btn-outline btn-md">
               <Icon name="phone" class="h-4 w-4" />
               {CONTACT.phone}
             </a>
           </div>
         </div>
-
-        <p class="mt-8 text-center text-sm leading-relaxed text-ink-subtle">
-          We'd rather show you nothing than show you reviews we made up. If you're
-          weighing us against another buyer, ask both of us for references you can
-          actually call — and be wary of anyone whose testimonials have no names.
-        </p>
       </div>
     )}
   </Section>
@@ -110,19 +125,31 @@ import { CONTACT, SITE } from '@/config/site';
       lead={`Selling a house is one of the largest financial decisions you will make. Here is how to verify any cash buyer in Houston, ${SITE.name} included.`}
     />
 
-    <div class="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-3">
+    <div class="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2">
       {[
         {
-          title: 'Ask for references',
-          body: 'Ask for two or three recent sellers you can call. A buyer who has genuinely closed deals locally will have them.',
+          title: 'Ask for references you can actually call',
+          body: 'Ask for two or three recent sellers and then phone them. A buyer who has genuinely closed deals in Houston will have names to give you. Be wary of testimonials with no surname and no city.',
         },
         {
-          title: 'Ask which title company',
-          body: 'A legitimate buyer closes at a neutral, reputable title company. Anyone pushing a "kitchen table closing" is a red flag.',
+          title: 'Ask which title company they close at',
+          body: 'A legitimate buyer closes at a neutral, reputable title company that runs a proper title search. Anyone pushing a "kitchen table closing" — signing papers at your house, no title company — is a serious red flag.',
         },
         {
-          title: 'Ask about proof of funds',
-          body: 'If someone is buying with cash, they can show you they have it. If they cannot, they are likely assigning your contract to someone else.',
+          title: 'Ask for proof of funds',
+          body: 'If someone is buying with cash, they can show you a bank statement or a proof-of-funds letter. If they will not, they are probably planning to assign your contract to another buyer, which means your closing depends on a stranger.',
+        },
+        {
+          title: 'Check the county records yourself',
+          body: 'Harris County property records are public and free to search. Look up the company name and see whether they have actually bought and sold property here, and for how long. It takes ten minutes and it is the hardest thing to fake.',
+        },
+        {
+          title: 'Never pay an upfront fee',
+          body: 'A genuine cash buyer makes money on the property, not on you. Application fees, "processing" fees, or anything payable before closing is not how this works. Walk away.',
+        },
+        {
+          title: 'Read before you sign — and take your time',
+          body: 'Any buyer worth dealing with will give you the contract to read and let you have an attorney look at it. Pressure to sign today, or an offer that "expires tonight", is a tactic — not a deadline.',
         },
       ].map((item) => (
         <div class="rounded-xl bg-ivory-100 p-6">
@@ -133,6 +160,12 @@ import { CONTACT, SITE } from '@/config/site';
         </div>
       ))}
     </div>
+
+    <p class="mx-auto mt-10 max-w-3xl rounded-xl border-l-2 border-brass-500 bg-ivory-100 p-6 leading-relaxed text-ink-muted">
+      <strong class="font-semibold text-navy-900">Hold us to all six of these.</strong>
+      If we cannot answer any of them to your satisfaction, do not sell us your
+      house. We would rather lose a deal than have someone feel pushed into one.
+    </p>
   </Section>
 
   <CtaBand />

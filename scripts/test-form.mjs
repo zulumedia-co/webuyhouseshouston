@@ -20,6 +20,13 @@ const check = async (name, fn) => {
   }
 };
 
+// Warm every route the run touches first. Against the dev server, Vite
+// compiles a route on its first request, which can take 30s+ on a cold start
+// and would otherwise surface as a spurious navigation timeout mid-test.
+for (const path of ['/', '/thank-you/']) {
+  await page.goto(BASE + path, { waitUntil: 'domcontentloaded', timeout: 120000 });
+}
+
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
 await page.waitForSelector('[data-offer-form] [data-next]', { state: 'visible' });
 
