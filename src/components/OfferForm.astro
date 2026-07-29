@@ -14,6 +14,11 @@ import { CONTACT, PROMISE } from '@/config/site';
  * 2. Progressive enhancement. The form is a real <form> with a real action, so
  *    it still submits without JavaScript — it just posts both steps at once.
  *    Leads are the business; they must not depend on a JS bundle loading.
+ *
+ *    This only holds because of the <noscript> style block in BaseLayout, which
+ *    reveals step 2 and hides the JS-only Continue/Back buttons. Without it the
+ *    submit button is unreachable and every no-JS lead is lost in silence.
+ *    `scripts/test-form.mjs` covers this path with JavaScript disabled.
  */
 interface Props {
   /** `light` renders on ivory, `dark` renders on navy. */

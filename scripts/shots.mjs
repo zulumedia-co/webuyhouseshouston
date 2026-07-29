@@ -1,33 +1,18 @@
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { ROUTES } from './routes.mjs';
 
 const BASE = process.env.BASE || 'http://localhost:4321';
 const OUT = process.env.OUT || '/tmp/shots';
 mkdirSync(OUT, { recursive: true });
 
-const pages = [
-  ['home', '/'],
-  ['offer', '/get-a-cash-offer-today/'],
-  ['how-it-works', '/how-we-buy-houses/'],
-  ['compare', '/compare/'],
-  ['sell-your-house', '/sell-your-house/'],
-  ['our-company', '/our-company/'],
-  ['contact', '/contact-us/'],
-  ['testimonials', '/testimonials/'],
-  ['faq', '/faq/'],
-  ['foreclosure', '/avoiding-foreclosure/'],
-  ['resources', '/resource-page/'],
-  ['blog', '/blog/'],
-  ['post', '/blog/how-to-sell-a-house-with-liens-in-houston/'],
-  ['harris', '/harris_county/'],
-  ['thank-you', '/thank-you/'],
-  ['property', '/property/homes-for-sale-in-tx-houston-77034-vinita-3br/'],
-  ['404', '/404.html'],
-];
+const pages = ROUTES;
 
 const browser = await chromium.launch();
 const errors = [];
 
+// try/finally so a navigation failure can never leak a Chromium process.
+try {
 for (const [viewport, size] of [
   ['desktop', { width: 1440, height: 1000 }],
   ['mobile', { width: 390, height: 844 }],
@@ -58,13 +43,16 @@ for (const [viewport, size] of [
     await page.waitForTimeout(250);
     await page.screenshot({
       path: `${OUT}/${viewport}-${name}.png`,
-      fullPage: viewport === 'desktop' ? false : false,
+      // Deliberately viewport-height, not full-page, on both: these shots are
+      // for comparing what lands above the fold across desktop and mobile.
+      fullPage: false,
     });
   }
   await ctx.close();
 }
-
-await browser.close();
+} finally {
+  await browser.close();
+}
 
 if (errors.length) {
   console.log('ISSUES:');

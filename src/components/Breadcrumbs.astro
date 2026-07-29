@@ -6,6 +6,11 @@ interface Props {
 }
 const { items, tone = 'light', class: className = '' } = Astro.props;
 const light = tone === 'light';
+
+// `aria-current="page"` is keyed off the item genuinely being last, not off it
+// lacking an href — otherwise a middle item without a link would be announced
+// as the current page.
+const lastIndex = items.length - 1;
 ---
 
 <nav aria-label="Breadcrumb" class={className}>
@@ -25,7 +30,7 @@ const light = tone === 'light';
       <>
         <li aria-hidden="true" class={light ? 'text-white/25' : 'text-ink-subtle/50'}>/</li>
         <li>
-          {item.href && i < items.length - 1 ? (
+          {item.href && i < lastIndex ? (
             <a
               href={item.href}
               class:list={[
@@ -36,7 +41,10 @@ const light = tone === 'light';
               {item.label}
             </a>
           ) : (
-            <span class={light ? 'text-white/80' : 'text-navy-900'} aria-current="page">
+            <span
+              class={light ? 'text-white/80' : 'text-navy-900'}
+              aria-current={i === lastIndex ? 'page' : undefined}
+            >
               {item.label}
             </span>
           )}

@@ -2,6 +2,7 @@
 import '@/styles/global.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import Icon from '@/components/Icon.astro';
 import { SITE, CONTACT, ABOUT_BLURB } from '@/config/site';
 
 interface Props {
@@ -98,12 +99,38 @@ const allSchema = [businessSchema, ...schema];
       href="/rss.xml"
     />
 
+    {/* `<` is escaped to its unicode form so a value containing `</script>`
+        cannot terminate the block early and inject markup. Article schema is
+        built from 335 posts scraped off the legacy Carrot site, so the content
+        is not fully under our control. The escape is invisible to parsers. */}
     {allSchema.map((s) => (
       <script
         type="application/ld+json"
-        set:html={JSON.stringify(s)}
+        set:html={JSON.stringify(s).replace(/</g, '\\u003c')}
       />
     ))}
+
+    {/*
+      No-JavaScript fallback for the cash-offer form.
+
+      The form is split into two steps, and the "Continue" button that reveals
+      step 2 is JavaScript-only. Without this, a visitor whose JS fails to load
+      sees step 1, clicks Continue, and nothing happens — the submit button is
+      unreachable and the lead is lost silently.
+
+      Collapsing to a single-step form is the right fallback: the <form> element
+      posts all fields at once and the endpoint already handles that, replying
+      with a 303 redirect to the thank-you page. The step indicator and the
+      Continue/Back buttons are hidden because they are meaningless without JS.
+    */}
+    <noscript>
+      <style>
+        [data-offer-form] [data-panel='2'] { display: block !important; }
+        [data-offer-form] [data-next],
+        [data-offer-form] [data-back] { display: none !important; }
+        [data-offer-card] [data-steps] { display: none !important; }
+      </style>
+    </noscript>
 
     <slot name="head" />
   </head>
@@ -138,15 +165,7 @@ const allSchema = [businessSchema, ...schema];
               class="btn btn-primary btn-md flex-1"
               data-analytics="mobile-bar-call"
             >
-              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+              <Icon name="phone" class="h-4 w-4" />
               Call {CONTACT.phone}
             </a>
             <a

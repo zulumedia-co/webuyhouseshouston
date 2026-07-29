@@ -8,14 +8,16 @@ import OfferForm from '@/components/OfferForm.astro';
 import FaqAccordion from '@/components/FaqAccordion.astro';
 import CtaBand from '@/components/CtaBand.astro';
 import Icon from '@/components/Icon.astro';
-import { FAQS } from '@/data/content';
+import { pickFaqs } from '@/data/content';
 import { SITE } from '@/config/site';
 
-const processFaqs = FAQS.filter((f) =>
-  /listing my house on the MLS|determine the price|quickly can you actually close|really bad shape/.test(
-    f.question,
-  ),
-);
+// Selected by stable id, not by question wording — see pickFaqs.
+const processFaqs = pickFaqs([
+  'mls-or-buying',
+  'how-price-determined',
+  'how-fast',
+  'bad-shape',
+]);
 
 const howToSchema = {
   '@context': 'https://schema.org',

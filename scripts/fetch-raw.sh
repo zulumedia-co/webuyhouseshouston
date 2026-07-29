@@ -18,7 +18,9 @@ grab() {
   if [ -s "$out" ] && [ "$(wc -c <"$out")" -gt 20000 ]; then
     return 0
   fi
-  curl -sL --max-time 45 --retry 2 --retry-delay 2 -A "$UA" "$url" -o "$out"
+  # -f makes curl exit non-zero on 4xx/5xx instead of writing the error page to
+  # disk, where the `-s "$out"` check below would happily accept it as content.
+  curl -sfL --max-time 45 --retry 2 --retry-delay 2 -A "$UA" "$url" -o "$out"
   if [ ! -s "$out" ]; then
     echo "FAIL $url" >>"$RAW/_failures.log"
   fi

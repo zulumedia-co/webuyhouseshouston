@@ -50,8 +50,11 @@ def download(job: tuple[str, str]) -> tuple[str, bool]:
     out = os.path.join(DEST, name)
     if os.path.exists(out) and os.path.getsize(out) > 0:
         return url, True
+    # -f makes curl exit non-zero on 4xx/5xx. Without it an HTML error page
+    # larger than the 500-byte floor below would be accepted as a valid image
+    # and shipped to production as a silently broken <img>.
     result = subprocess.run(
-        ["curl", "-sL", "--max-time", "45", "--retry", "2", "--retry-delay", "2",
+        ["curl", "-sfL", "--max-time", "45", "--retry", "2", "--retry-delay", "2",
          "-A", UA, url, "-o", out],
         capture_output=True,
     )

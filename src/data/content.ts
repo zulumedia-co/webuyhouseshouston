@@ -116,6 +116,12 @@ export const COMPARISON: ComparisonRow[] = [
 ];
 
 export interface Faq {
+  /**
+   * Stable identifier. Pages select FAQs by id rather than by matching the
+   * question text, so rewording a question can never silently drop it from a
+   * page. Ids must not be renamed once in use.
+   */
+  id: string;
   question: string;
   answer: string;
 }
@@ -126,46 +132,74 @@ export interface Faq {
  */
 export const FAQS: Faq[] = [
   {
+    id: 'mls-or-buying',
     question: 'Will you be listing my house on the MLS or actually buying it?',
     answer:
       'Great question. We’re not agents, and we don’t list houses. We are professional home buyers: we buy houses in Houston that meet our purchasing criteria. From there we may repair the house and resell it to another home owner or keep it as a rental ourselves.',
   },
   {
+    id: 'fair-prices',
     question: 'Do you pay fair prices for properties?',
     answer:
       'Many of the houses we purchase are below market value (we do this so we can resell it at a profit to another home owner). We are looking to get a fair discount on a property. However, in our experience, many sellers aren’t necessarily expecting a large “windfall” on the property but rather appreciate that we can offer cash, we close very quickly (no waiting for financing), and no time or effort or expense is required on your part to fix up the property or pay agent fees. If that’s what you’re looking for and you see the value in getting your house sold fast… let’s see if we can come to a fair win-win price. Besides, our no-obligation pricing commitment means that you do not have to move forward with the offer we give — but it’s good to know what we’re offering.',
   },
   {
+    id: 'how-price-determined',
     question: 'How do you determine the price to offer on my house?',
     answer:
       'Great question, and we’re an open book: our process is very straightforward. We look at the location of the property, what repairs are needed, the current condition of the property, and values of comparable houses sold in the area recently. We take many pieces of information into consideration and come up with a fair price that works for us and works for you too.',
   },
   {
+    id: 'fees-commissions',
     question: 'Are there any fees or commissions to work with you?',
     answer:
       'This is what makes us stand out from the traditional method of selling your house: there are NO fees or commissions when you sell your house to us. We’ll make you an offer, and if it’s a fit then we’ll buy your house (and we’ll often pay for the closing costs too). No hassle. No fees. We make our money after we pay for repairs on the house (if any) and sell it for a profit — we’re taking all of the risk on whether we can sell it for a profit or not. Once we buy the house from you, the responsibility is ours and you walk away without the burden of the property and its payments, and often with cash in your hand.',
   },
   {
+    id: 'vs-agent',
     question: 'How are you different from a real estate agent?',
     answer:
       'Real estate agents list properties and hope that someone will buy them. The agent shows the properties to prospective buyers if there are any (the average time to sell a property in many markets right now is 6–12 months) and then takes a percentage of the sale price if they find a buyer. Oftentimes, the agent’s commission is 3–6% of the sale price of your house (so if it’s a $100,000 house, you’ll pay between $3,000 and $6,000 in commissions to an agent). Agents provide a great service for those that can wait 6–12 months to sell and who don’t mind giving up some of that sale price to pay the commissions. But that’s where we’re different: we’re not agents, we’re home buyers. Our company actually buys houses. We don’t list houses. Since we’re actually the one buying the house from you, and we pay with all cash, we can make a decision to buy your house within a couple of days — sometimes the same day.',
   },
   {
+    id: 'obligation',
     question: 'Is there any obligation when I submit my info?',
     answer:
       'There is absolutely zero obligation for you. Once you tell us a bit about your property, we’ll take a look at things, maybe set up a call with you to find out a bit more, and make you an all-cash offer that’s fair for you and fair for us. From there, it’s 100% your decision on whether or not you’d like to sell your house to us. We won’t hassle you and we won’t harass you — it’s 100% your decision and we’ll let you decide what’s right for you.',
   },
   {
+    id: 'bad-shape',
     question: 'What if the house is in really bad shape? Will you still buy it?',
     answer:
       'We buy houses in any condition or shape. You’d be amazed at some of the houses we’ve bought before. Why do we buy even rundown houses? Simple — most ugly houses just need a little TLC, and then they’re pretty houses that someone would love to live in once again. We pay for all renovations and repairs after we buy the house, so you don’t have to worry about any of that.',
   },
   {
+    id: 'how-fast',
     question: 'How quickly can you actually close?',
     answer:
       'Once we get your info, we’re usually able to make you a fair all-cash offer within 24 hours. From there we can close as quickly as 7 days, or on whatever schedule suits you — sometimes we can have a check in your hand the very same day. We close at a local, reputable title company, so there is never any question about where the money is coming from.',
   },
 ];
+
+/**
+ * Selects FAQs by id, preserving the order requested.
+ *
+ * Throws on an unknown id rather than returning a short list. The whole reason
+ * ids exist is that the previous approach — matching question text with a
+ * regex — failed silently: a copy edit would quietly drop a question from a
+ * page with nothing to indicate it. A build-time error is the point.
+ */
+export function pickFaqs(ids: string[]): Faq[] {
+  return ids.map((id) => {
+    const faq = FAQS.find((f) => f.id === id);
+    if (!faq) {
+      throw new Error(
+        `pickFaqs: no FAQ with id "${id}". Valid ids: ${FAQS.map((f) => f.id).join(', ')}`,
+      );
+    }
+    return faq;
+  });
+}
 
 export interface Resource {
   title: string;

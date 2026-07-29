@@ -39,7 +39,9 @@ const paths: Record<string, string> = {
   stroke-linejoin="round"
   aria-hidden="true"
 >
-  {paths[name].split(' M').map((d, i) => (
-    <path d={i === 0 ? d : `M${d}`} />
-  ))}
+  {/* A single <path> is enough — every `M` command already starts an
+      independent subpath, and stroke caps/joins apply per subpath either way.
+      Splitting on " M" relied on incidental whitespace in hand-authored path
+      strings for no visual difference. */}
+  <path d={paths[name]} />
 </svg>

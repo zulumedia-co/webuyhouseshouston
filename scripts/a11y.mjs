@@ -2,22 +2,20 @@
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { ROUTE_PATHS } from './routes.mjs';
 
 const require = createRequire(import.meta.url);
 const axeSource = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
 const BASE = process.env.BASE || 'http://localhost:4322';
-const pages = [
-  '/', '/get-a-cash-offer-today/', '/how-we-buy-houses/', '/compare/',
-  '/sell-your-house/', '/our-company/', '/contact-us/', '/testimonials/',
-  '/faq/', '/avoiding-foreclosure/', '/resource-page/', '/blog/',
-  '/blog/how-to-sell-a-house-with-liens-in-houston/', '/harris_county/',
-  '/thank-you/', '/privacy/',
-];
+const pages = ROUTE_PATHS;
 
 const browser = await chromium.launch();
 const byRule = new Map();
 
+// try/finally so a navigation or evaluate failure can never leak a Chromium
+// process — those accumulate across repeated runs.
+try {
 for (const viewport of [
   { name: 'desktop', width: 1440, height: 1000 },
   { name: 'mobile', width: 390, height: 844 },
@@ -48,8 +46,9 @@ for (const viewport of [
   }
   await ctx.close();
 }
-
-await browser.close();
+} finally {
+  await browser.close();
+}
 
 if (byRule.size === 0) {
   console.log('no WCAG 2.1 A/AA violations across', pages.length, 'pages × 2 viewports');

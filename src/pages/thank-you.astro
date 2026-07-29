@@ -5,13 +5,11 @@ import SectionHeading from '@/components/SectionHeading.astro';
 import FaqAccordion from '@/components/FaqAccordion.astro';
 import Icon from '@/components/Icon.astro';
 import { CONTACT, SITE } from '@/config/site';
-import { FAQS } from '@/data/content';
+import { pickFaqs } from '@/data/content';
 
-const thankYouFaqs = FAQS.filter((f) =>
-  /How are you different|fees or commissions|really bad shape|quickly can you actually close/.test(
-    f.question,
-  ),
-);
+// Selected by stable id, not by question wording — a copy edit in content.ts
+// must never silently empty this list.
+const thankYouFaqs = pickFaqs(['vs-agent', 'fees-commissions', 'bad-shape', 'how-fast']);
 ---
 
 <BaseLayout

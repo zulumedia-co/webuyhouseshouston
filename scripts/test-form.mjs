@@ -20,6 +20,9 @@ const check = async (name, fn) => {
   }
 };
 
+// try/finally so a cold-start timeout during warmup — which happens outside
+// check()'s error handling — cannot leak a Chromium process.
+try {
 // Warm every route the run touches first. Against the dev server, Vite
 // compiles a route on its first request, which can take 30s+ on a cold start
 // and would otherwise surface as a spurious navigation timeout mid-test.
@@ -114,7 +117,75 @@ await check('mobile menu opens and closes', async () => {
   await m.close();
 });
 
-await browser.close();
+await check('form is fully usable with JavaScript disabled', async () => {
+  // This is the path that silently lost every lead before the <noscript>
+  // fallback existed: step 2 stayed hidden and the submit button was
+  // unreachable. Nothing was testing it, which is exactly why it shipped.
+  const ctx = await browser.newContext({ javaScriptEnabled: false });
+  const nojs = await ctx.newPage();
+  try {
+    await nojs.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+
+    assert.ok(
+      await nojs.isVisible('[data-offer-form] [data-panel="2"]'),
+      'step 2 is hidden without JS — the submit button is unreachable',
+    );
+    assert.ok(
+      !(await nojs.isVisible('[data-offer-form] [data-next]')),
+      'the JS-only Continue button is still showing without JS',
+    );
+    assert.ok(
+      await nojs.isVisible('[data-offer-form] [data-submit]'),
+      'submit button not reachable without JS',
+    );
+
+    // A real end-to-end submission with no JavaScript at all.
+    await nojs.fill('[data-offer-form] [name="address"]', '1 No Script Ave');
+    await nojs.fill('[data-offer-form] [name="city"]', 'Houston');
+    await nojs.fill('[data-offer-form] [name="name"]', 'Nojs Tester');
+    await nojs.fill('[data-offer-form] [name="phone"]', '7135550123');
+    await Promise.all([
+      nojs.waitForURL('**/thank-you/', { timeout: 20000 }),
+      nojs.click('[data-offer-form] [data-submit]'),
+    ]);
+    assert.ok(nojs.url().includes('/thank-you/'), 'no-JS submission did not reach thank-you');
+  } finally {
+    await ctx.close();
+  }
+});
+
+await check('mobile menu traps keyboard focus inside the panel', async () => {
+  const m = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
+  await m.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+  await m.waitForSelector('[data-menu-toggle]', { state: 'visible' });
+  await m.click('[data-menu-toggle]');
+  await m.waitForTimeout(400);
+
+  // Tab well past the number of items in the sheet. Focus must never escape
+  // into the header or page content sitting behind the backdrop.
+  for (let i = 0; i < 25; i++) {
+    await m.keyboard.press('Tab');
+    const inside = await m.evaluate(() =>
+      document.querySelector('[data-menu-sheet]')?.contains(document.activeElement),
+    );
+    assert.ok(inside, `focus escaped the menu after ${i + 1} Tab presses`);
+  }
+
+  // Shift+Tab from the first item must wrap to the last, not leave the panel.
+  for (let i = 0; i < 25; i++) {
+    await m.keyboard.press('Shift+Tab');
+    const inside = await m.evaluate(() =>
+      document.querySelector('[data-menu-sheet]')?.contains(document.activeElement),
+    );
+    assert.ok(inside, `focus escaped the menu after ${i + 1} Shift+Tab presses`);
+  }
+
+  await m.close();
+});
+
+} finally {
+  await browser.close();
+}
 
 console.log(fails.length ? `\n${fails.length} FAILED` : '\nall form checks passed');
 process.exit(fails.length ? 1 : 0);

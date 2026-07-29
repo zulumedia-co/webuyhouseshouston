@@ -112,19 +112,51 @@ export function isSpam(form: FormData): string | null {
 type Env = Record<string, string | undefined>;
 type Adapter = (lead: Lead, env: Env) => Promise<void>;
 
+/**
+ * How long to wait for a CRM before giving up.
+ *
+ * This runs on the visitor's request thread, so an unbounded wait leaves them
+ * watching a "Sending…" spinner forever. 8s sits comfortably inside the
+ * hosting platform's own function limit, so our timeout fires first and they
+ * get the "please call us" message rather than a blank platform error.
+ *
+ * Defined once and used by every adapter — a per-adapter copy would drift.
+ */
+const CRM_TIMEOUT_MS = 8000;
+
+/**
+ * `fetch` with a bounded timeout and a readable error when it expires.
+ * `label` names the destination so failures are identifiable in the logs.
+ */
+async function crmFetch(url: string, init: RequestInit, label: string): Promise<Response> {
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(CRM_TIMEOUT_MS) });
+  } catch (err) {
+    const name = err instanceof Error ? err.name : '';
+    if (name === 'TimeoutError' || name === 'AbortError') {
+      throw new Error(`${label} did not respond within ${CRM_TIMEOUT_MS}ms`);
+    }
+    throw err;
+  }
+}
+
 /** Generic JSON webhook. Works with Zapier, Make, n8n, and most REI CRMs. */
 const webhookAdapter: Adapter = async (lead, env) => {
   const url = env.LEAD_WEBHOOK_URL;
   if (!url) throw new Error('LEAD_WEBHOOK_URL is not set');
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(env.LEAD_WEBHOOK_SECRET ? { Authorization: `Bearer ${env.LEAD_WEBHOOK_SECRET}` } : {}),
+  const res = await crmFetch(
+    url,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(env.LEAD_WEBHOOK_SECRET ? { Authorization: `Bearer ${env.LEAD_WEBHOOK_SECRET}` } : {}),
+      },
+      body: JSON.stringify(lead),
     },
-    body: JSON.stringify(lead),
-  });
+    'Webhook',
+  );
   if (!res.ok) throw new Error(`Webhook responded ${res.status}`);
 };
 
@@ -133,23 +165,33 @@ const goHighLevelAdapter: Adapter = async (lead, env) => {
   const url = env.GHL_WEBHOOK_URL;
   if (!url) throw new Error('GHL_WEBHOOK_URL is not set');
 
-  const [firstName, ...rest] = lead.name.split(' ');
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      firstName,
-      lastName: rest.join(' '),
-      phone: lead.phone,
-      email: lead.email || undefined,
-      address1: lead.address,
-      city: lead.city,
-      postalCode: lead.zip,
-      state: 'TX',
-      source: lead.source,
-      customField: { timeline: lead.timeline, message: lead.message, pagePath: lead.pagePath },
-    }),
-  });
+  // Reuse splitName so every CRM derives first/last identically. A local
+  // `split(' ')` here disagreed with it on names containing double spaces.
+  const { first: firstName, last: lastName } = splitName(lead.name);
+  const res = await crmFetch(
+    url,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        phone: lead.phone,
+        email: lead.email || undefined,
+        address1: lead.address,
+        city: lead.city,
+        postalCode: lead.zip,
+        state: 'TX',
+        source: lead.source,
+        customField: {
+          timeline: lead.timeline,
+          message: lead.message,
+          pagePath: lead.pagePath,
+        },
+      }),
+    },
+    'GoHighLevel',
+  );
   if (!res.ok) throw new Error(`GoHighLevel responded ${res.status}`);
 };
 
@@ -205,11 +247,7 @@ const flowTrackAdapter: Adapter = async (lead, env) => {
     headers.Authorization = `Bearer ${env.FLOWTRACK_API_KEY}`;
   }
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload),
-  });
+  const res = await crmFetch(url, { method: 'POST', headers, body: JSON.stringify(payload) }, 'FlowTrack');
 
   if (!res.ok) {
     // Include the response body — CRM validation errors are the most likely
@@ -242,19 +280,23 @@ const resendAdapter: Adapter = async (lead, env) => {
     )
     .join('');
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: env.LEAD_EMAIL_FROM || 'leads@webuyhouseshouston.com',
-      to: to.split(',').map((s) => s.trim()),
-      reply_to: lead.email || undefined,
-      subject: `New cash offer request — ${lead.address}, ${lead.city}`,
-      html:
-        `<h2 style="font:600 20px system-ui;color:#0b1b33">New Cash Offer Request</h2>` +
-        `<table style="border-collapse:collapse">${rows}</table>`,
-    }),
-  });
+  const res = await crmFetch(
+    'https://api.resend.com/emails',
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: env.LEAD_EMAIL_FROM || 'leads@webuyhouseshouston.com',
+        to: to.split(',').map((s) => s.trim()),
+        reply_to: lead.email || undefined,
+        subject: `New cash offer request — ${lead.address}, ${lead.city}`,
+        html:
+          `<h2 style="font:600 20px system-ui;color:#0b1b33">New Cash Offer Request</h2>` +
+          `<table style="border-collapse:collapse">${rows}</table>`,
+      }),
+    },
+    'Resend',
+  );
   if (!res.ok) throw new Error(`Resend responded ${res.status}`);
 };
 
@@ -282,10 +324,22 @@ export async function deliverLead(lead: Lead, env: Env): Promise<void> {
   await adapter(lead, env);
 }
 
-function escapeHtml(s: string): string {
+/**
+ * Escapes visitor-supplied text for safe inclusion in HTML.
+ *
+ * Covers both quote characters as well as the angle brackets and ampersand.
+ * The current callers only place values in element text, where quotes are
+ * harmless — but escaping them means the helper is also correct inside a
+ * single- or double-quoted attribute, which is where the next caller is most
+ * likely to put it. No dependency: this is a well-defined five-character
+ * substitution, and adding a package to the project for it would be a worse
+ * trade than owning six lines.
+ */
+export function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

@@ -1,5 +1,6 @@
 ---
 import Logo from '@/components/Logo.astro';
+import Icon from '@/components/Icon.astro';
 import { NAV, CONTACT } from '@/config/site';
 
 const path = Astro.url.pathname;
@@ -91,6 +92,9 @@ const isActive = (href: string) =>
 <div
   id="mobile-menu"
   class="fixed inset-0 z-[60] hidden lg:hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Site menu"
   data-menu-panel
 >
   <div class="absolute inset-0 bg-navy-950/40 backdrop-blur-sm" data-menu-backdrop></div>
@@ -107,14 +111,7 @@ const isActive = (href: string) =>
         aria-label="Close menu"
         data-menu-close
       >
-        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="m6 6 12 12M18 6 6 18"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-          />
-        </svg>
+        <Icon name="x" class="h-6 w-6" />
       </button>
     </div>
 
@@ -187,6 +184,16 @@ const isActive = (href: string) =>
   if (panel && sheet && toggle) {
     let lastFocused: HTMLElement | null = null;
 
+    // Elements that can receive keyboard focus inside the open sheet. Recomputed
+    // on each Tab press rather than cached, so it stays correct if the panel's
+    // contents ever change.
+    const focusable = (): HTMLElement[] =>
+      Array.from(
+        sheet.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => el.offsetParent !== null);
+
     const open = () => {
       lastFocused = document.activeElement as HTMLElement;
       panel.classList.remove('hidden');
@@ -212,7 +219,32 @@ const isActive = (href: string) =>
     toggle.addEventListener('click', open);
     closers.forEach((el) => el.addEventListener('click', close));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !panel.classList.contains('hidden')) close();
+      if (panel.classList.contains('hidden')) return;
+
+      if (e.key === 'Escape') {
+        close();
+        return;
+      }
+
+      // Trap Tab inside the sheet. Without this, tabbing walks out of the open
+      // menu into the header and page content sitting behind the backdrop —
+      // invisible to sighted keyboard users, and confusing with a screen reader.
+      if (e.key !== 'Tab') return;
+
+      const items = focusable();
+      if (items.length === 0) return;
+
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (e.shiftKey && (active === first || !sheet.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !sheet.contains(active))) {
+        e.preventDefault();
+        first.focus();
+      }
     });
   }
 </script>
