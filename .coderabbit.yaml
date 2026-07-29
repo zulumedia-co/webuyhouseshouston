@@ -1,0 +1,13 @@
+# CodeRabbit configuration
+# Focus reviews on real source code by excluding bulk static assets and
+# migrated blog content. This also keeps PRs under CodeRabbit's 300-file
+# review limit (the initial import was ~600 files, mostly images + markdown).
+reviews:
+  path_filters:
+    - "!public/**"          # images and static assets (blog-images, property, favicon)
+    - "!src/content/**"     # migrated blog markdown (content, not code)
+    - "!**/*.webp"
+    - "!**/*.png"
+    - "!**/*.jpg"
+    - "!**/*.jpeg"
+    - "!**/*.svg"
