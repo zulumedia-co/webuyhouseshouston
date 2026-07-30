@@ -14,11 +14,18 @@ npm run dev      # http://localhost:4321
 npm run build    # static build + one serverless function for leads
 ```
 
-**Node 22.11 or later** — `.nvmrc` pins it, and `engines.node` enforces it on
-install. `npm run test:leads` imports TypeScript directly via
-`--experimental-strip-types`, which does not exist before Node 22.6, so on an
-older runtime it fails with an unrecognised-flag error rather than anything
-that points at the cause.
+**Node 22.12 or later**, pinned to 22.17.1 in `.nvmrc`. Two independent
+constraints meet here, and the higher one is not obvious:
+
+- `npm run test:leads` uses `--experimental-strip-types`, added in Node 22.6.
+- `vite`, `rolldown` and rolldown's platform binaries require `>=22.12.0`.
+
+The second one bites in a way that is easy to misread. npm **silently skips**
+optional dependencies whose `engines` do not match — no error, no warning beyond
+an `EBADENGINE` notice buried in the install log. On Node 22.11 the Linux
+rolldown binary is simply not installed, and the build then fails much later
+with "Cannot find native binding", which reads like a corrupt lockfile rather
+than a Node version problem. Do not lower this pin.
 
 **Performance:** the homepage is 26.3 KB gzipped on first load (15.3 KB HTML +
 11 KB CSS) and ships 3.3 KB of inline JavaScript — no framework runtime, no
@@ -212,7 +219,7 @@ as a static file.
 |---|---|
 | Build command | `npm run build` |
 | Output directory | `dist` |
-| Node version | 22.11 or later — set `NODE_VERSION=22.11.0`, or let Pages read `.nvmrc` |
+| Node version | 22.12 or later — Pages reads `.nvmrc` (pinned to 22.17.1) |
 
 **Environment variables must be set in the Cloudflare Pages dashboard**, not in
 a committed file. This matters more than it sounds: on Cloudflare, secrets are
