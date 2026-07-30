@@ -1,19 +1,28 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import vercel from '@astrojs/vercel';
+import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 
 // Every page is prerendered to static HTML. The only exception is the lead
 // endpoint (`src/pages/api/lead.ts`), which opts out via `prerender = false`
 // so it can forward submissions to the CRM at request time.
 //
-// Swapping hosts is a one-line change: replace the `vercel()` adapter with
-// @astrojs/netlify or @astrojs/node. Nothing else in the codebase depends on it.
+// Deployment target is Cloudflare Pages, so the adapter must be the Cloudflare
+// one — a Vercel build emits `.vercel/output/functions/*.func`, which Cloudflare
+// cannot execute. Pages would serve fine and every form submission would 404.
+//
+// Note for anyone changing host again: on Cloudflare, runtime secrets are NOT
+// available through `import.meta.env`. They arrive per-request on
+// `locals.runtime.env`, which is why `pages/api/lead.ts` reads from there first.
 export default defineConfig({
   site: 'https://webuyhouseshouston.com',
   output: 'static',
-  adapter: vercel(),
+  adapter: cloudflare({
+    // Lets `astro dev` see the same bindings and secrets Cloudflare injects in
+    // production, so the lead endpoint behaves identically in both.
+    platformProxy: { enabled: true },
+  }),
   trailingSlash: 'always',
   integrations: [
     sitemap({

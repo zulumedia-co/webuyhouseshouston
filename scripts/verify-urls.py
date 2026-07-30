@@ -15,7 +15,14 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DIST = os.path.join(ROOT, "dist", "client")
+# The Cloudflare adapter emits straight into `dist/`; some other adapters use
+# `dist/client/`. Detect rather than assume, so switching host does not silently
+# make this script check an empty directory and report success.
+_CANDIDATES = [os.path.join(ROOT, "dist"), os.path.join(ROOT, "dist", "client")]
+DIST = next(
+    (d for d in _CANDIDATES if os.path.isfile(os.path.join(d, "index.html"))),
+    _CANDIDATES[0],
+)
 
 # Every non-blog page that was live on the legacy site.
 PAGES = [

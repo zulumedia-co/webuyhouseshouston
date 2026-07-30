@@ -40,18 +40,18 @@ const minutes = readingTime(post.body ?? '');
 ) : (
   <article
     class:list={[
-      'group flex flex-col overflow-hidden rounded-xl bg-white ring-1 ring-navy-900/[0.06] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card',
+      'group relative flex flex-col overflow-hidden rounded-xl bg-white ring-1 ring-navy-900/[0.06] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card',
       variant === 'feature' && 'lg:flex-row',
     ]}
   >
-    <a
-      href={href}
+    {/* Decorative only — a <div>, not a link. It was previously an anchor that
+        was simultaneously clickable and `aria-hidden`, i.e. interactive but
+        absent from the accessibility tree. The whole card is the link now. */}
+    <div
       class:list={[
         'block shrink-0 overflow-hidden bg-ivory-200',
         variant === 'feature' ? 'lg:w-[45%]' : '',
       ]}
-      tabindex="-1"
-      aria-hidden="true"
     >
       {image ? (
         <img
@@ -78,7 +78,7 @@ const minutes = readingTime(post.body ?? '');
           </span>
         </div>
       )}
-    </a>
+    </div>
 
     <div class:list={['flex flex-1 flex-col p-6', variant === 'feature' && 'lg:p-8']}>
       <div class="flex items-center gap-2 text-xs text-ink-subtle">
@@ -93,8 +93,13 @@ const minutes = readingTime(post.body ?? '');
           variant === 'feature' ? 'text-2xl lg:text-[1.75rem]' : 'text-lg',
         ]}
       >
+        {/* Stretched link: the <span> covers the whole card, so the entire
+            card is one click target while the accessible name stays the title.
+            Requires `relative` on the <article> — without a positioned
+            ancestor it sized itself against the viewport and overlapped
+            neighbouring cards on mobile. */}
         <a href={href} class="transition-colors group-hover:text-brass-700">
-          <span class="absolute inset-0 lg:hidden" aria-hidden="true"></span>
+          <span class="absolute inset-0 z-10" aria-hidden="true"></span>
           {post.data.title}
         </a>
       </h3>

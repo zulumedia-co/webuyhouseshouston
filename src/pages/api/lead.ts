@@ -81,7 +81,27 @@ function errorPage(status: number, heading: string, detail: string, backTo: stri
   });
 }
 
-export const POST: APIRoute = async ({ request }) => {
+/**
+ * Resolves the runtime environment, whichever host we are on.
+ *
+ * On Cloudflare, secrets set in the Pages dashboard are NOT exposed through
+ * `import.meta.env` — that is baked at build time and would be empty. They
+ * arrive per-request on `locals.runtime.env`. Reading that first means the CRM
+ * credentials are actually found in production; the `import.meta.env` fallback
+ * keeps `astro dev` and any other adapter working.
+ *
+ * Getting this wrong is silent: every adapter would throw "…is not set", the
+ * visitor would be told to call, and no lead would ever reach the CRM.
+ */
+function resolveEnv(locals: App.Locals): Record<string, string | undefined> {
+  const runtimeEnv = (locals as { runtime?: { env?: Record<string, unknown> } })?.runtime?.env;
+  return {
+    ...(import.meta.env as unknown as Record<string, string | undefined>),
+    ...(runtimeEnv as Record<string, string | undefined> | undefined),
+  };
+}
+
+export const POST: APIRoute = async ({ request, locals }) => {
   const wantsJson = (request.headers.get('accept') ?? '').includes('application/json');
 
   let form: FormData | null = null;
@@ -140,10 +160,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const ref = newLeadRef();
-  const outcome = await deliverLeadWithFallback(
-    lead,
-    import.meta.env as unknown as Record<string, string | undefined>,
-  );
+  const outcome = await deliverLeadWithFallback(lead, resolveEnv(locals));
 
   if (!outcome.delivered) {
     // Diagnostics carry no personal details — see redactLead. The reference is

@@ -198,13 +198,32 @@ visible difference.
 
 ## Deployment
 
-Built for Vercel. Swapping hosts is a one-line change in `astro.config.mjs` —
-replace the `vercel()` adapter with `@astrojs/netlify` or `@astrojs/node`.
-Nothing else in the codebase depends on it.
+**Cloudflare Pages.** The build emits `dist/` with a `_worker.js` and a
+`_routes.json` that sends only `/api/*` to the function — every page is served
+as a static file.
+
+| Setting | Value |
+|---|---|
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Node version | 20 or later |
+
+**Environment variables must be set in the Cloudflare Pages dashboard**, not in
+a committed file. This matters more than it sounds: on Cloudflare, secrets are
+*not* visible through `import.meta.env` — they arrive per-request on
+`locals.runtime.env`. `src/pages/api/lead.ts` reads from there first for exactly
+this reason. Get it wrong and every submission fails with "…is not set" while
+the site looks perfectly healthy.
+
+If the host ever changes, swap the adapter in `astro.config.mjs` and re-check
+that env lookup — a Vercel or Node build resolves it differently, and the
+output directory changes too.
 
 Before going live:
 
-- [ ] Set `LEAD_ADAPTER` and its credentials, then submit a real test lead
+- [ ] Set `LEAD_ADAPTER` and the CRM credentials, then submit a real test lead
+- [ ] Set `RESEND_API_KEY` + `LEAD_EMAIL_TO` so a CRM outage cannot lose a lead
+- [ ] Enable STOP and HELP handling in the CRM
 - [ ] Point DNS and confirm `site` in `astro.config.mjs` matches
 - [ ] Submit `/sitemap-index.xml` in Google Search Console
-- [ ] Run `python3 scripts/verify-urls.py` one final time against the production build
+- [ ] Run `npm run verify:urls` against the production build one final time
