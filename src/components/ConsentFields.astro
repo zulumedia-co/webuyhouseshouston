@@ -1,0 +1,49 @@
+---
+import { CONSENT } from '@/config/site';
+
+/**
+ * The consent block shared by every lead form.
+ *
+ * Both forms previously reimplemented this markup. That is a bad thing to
+ * duplicate: this is the opt-in evidence a carrier inspects during A2P 10DLC
+ * registration and the record a TCPA claim would turn on, so the two forms
+ * drifting apart is a compliance problem, not a cosmetic one.
+ *
+ * Two separate things, deliberately:
+ *   - an optional, unticked checkbox for recurring marketing messages
+ *   - an inline disclosure that submitting the form is consent to be contacted
+ *     about this property
+ *
+ * Never pre-tick the checkbox, and never make it required.
+ */
+interface Props {
+  /** Renders for a dark (navy) form surface. */
+  dark?: boolean;
+}
+
+const { dark = false } = Astro.props;
+---
+
+<label class="flex cursor-pointer items-start gap-3">
+  <input
+    type="checkbox"
+    name="smsConsent"
+    value="yes"
+    class:list={[
+      'mt-0.5 h-4 w-4 shrink-0 rounded border accent-brass-500',
+      dark ? 'border-white/25 bg-white/5' : 'border-hairline',
+    ]}
+  />
+  <span class:list={['text-[0.8125rem] leading-relaxed', dark ? 'text-white/55' : 'text-ink-subtle']}>
+    {CONSENT.marketing}
+  </span>
+</label>
+
+<slot />
+
+<p class:list={['text-[0.75rem] leading-relaxed', dark ? 'text-white/45' : 'text-ink-subtle']}>
+  {CONSENT.transactional} See our{' '}
+  <a href="/privacy/" class="underline underline-offset-2 hover:no-underline">Privacy Policy</a>
+  {' '}and{' '}
+  <a href="/terms/" class="underline underline-offset-2 hover:no-underline">Messaging Terms</a>.
+</p>

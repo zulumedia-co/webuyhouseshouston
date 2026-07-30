@@ -83,6 +83,17 @@ export const CONSENT = {
   /** Marketing. Separate, optional, unticked — never pre-selected. */
   marketing:
     'I agree to receive recurring marketing text messages from We Buy Houses Houston at the number provided. Consent is not a condition of purchase. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help.',
+  /**
+   * The clause carriers look for when reviewing an A2P 10DLC registration.
+   *
+   * Defined once because it must appear, word for word, on both the privacy
+   * policy and the terms page. It was previously typed out separately in each,
+   * with only a code comment asking future editors to keep them in step — which
+   * is not a mechanism. Two legal pages contradicting each other on this
+   * specific paragraph is exactly what gets a campaign registration rejected.
+   */
+  mobileDataClause:
+    'No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Information sharing with subcontractors in support services, such as customer service, is permitted. All other use case categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.',
 } as const;
 
 export const NAV: Array<{ label: string; href: string }> = [

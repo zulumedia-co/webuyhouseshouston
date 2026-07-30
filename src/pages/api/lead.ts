@@ -4,6 +4,7 @@ import {
   isSpam,
   deliverLeadWithFallback,
   redactLead,
+  redactErrorText,
   newLeadRef,
   escapeHtml,
 } from '@/lib/leads';
@@ -149,7 +150,13 @@ export const POST: APIRoute = async ({ request }) => {
     // shown to the visitor too, so a support call can be tied to these lines.
     console.error('[lead] DELIVERY FAILED', {
       ref,
-      attempts: outcome.attempts,
+      // Scrubbed as well as redacted: adapter errors are meant to carry only a
+      // status, but this guarantees no provider message can smuggle contact
+      // details into the log even if one changes.
+      attempts: outcome.attempts.map((a) => ({
+        adapter: a.adapter,
+        error: redactErrorText(a.error),
+      })),
       lead: redactLead(lead),
     });
 
@@ -186,7 +193,10 @@ export const POST: APIRoute = async ({ request }) => {
     console.warn('[lead] delivered via fallback', {
       ref,
       via: outcome.via,
-      failed: outcome.attempts,
+      failed: outcome.attempts.map((a) => ({
+        adapter: a.adapter,
+        error: redactErrorText(a.error),
+      })),
     });
   }
 

@@ -1,4 +1,5 @@
 ---
+import ConsentFields from '@/components/ConsentFields.astro';
 import { CONTACT, PROMISE, CONSENT } from '@/config/site';
 
 /**
@@ -265,46 +266,19 @@ const formId = `offer-form-${Math.random().toString(36).slice(2, 9)}`;
           </select>
         </div>
 
-        {/*
-          Marketing SMS opt-in. Deliberately optional, unticked, and separate
-          from the transactional disclosure below — TCPA treats marketing texts
-          differently from replying about the property someone just asked about,
-          and carriers reject A2P campaigns whose opt-in is bundled into the
-          submit action. Never pre-check this.
-        */}
-        <label class="flex cursor-pointer items-start gap-3">
-          <input
-            type="checkbox"
-            name="smsConsent"
-            value="yes"
-            class:list={[
-              'mt-0.5 h-4 w-4 shrink-0 rounded border accent-brass-500',
-              dark ? 'border-white/25 bg-white/5' : 'border-hairline',
-            ]}
-          />
-          <span class:list={['text-[0.8125rem] leading-relaxed', dark ? 'text-white/55' : 'text-ink-subtle']}>
-            {CONSENT.marketing}
-          </span>
-        </label>
-
-        <div class="flex gap-3">
-          <button type="button" class:list={['btn btn-lg shrink-0', dark ? 'btn-ghost-light' : 'btn-outline']} data-back>
-            Back
-          </button>
-          <button type="submit" class="btn btn-primary btn-lg flex-1" data-submit>
-            <span data-submit-label>Get My Cash Offer</span>
-          </button>
-        </div>
-
-        {/* Transactional disclosure: submitting is the consent to be contacted
-            about this property. Sits directly above the submit control so it is
-            unambiguously "at the point of collection". */}
-        <p class:list={['text-[0.75rem] leading-relaxed', dark ? 'text-white/45' : 'text-ink-subtle']}>
-          {CONSENT.transactional} See our{' '}
-          <a href="/privacy/" class="underline underline-offset-2 hover:no-underline">Privacy Policy</a>
-          {' '}and{' '}
-          <a href="/terms/" class="underline underline-offset-2 hover:no-underline">Messaging Terms</a>.
-        </p>
+        {/* Shared with the contact form — see ConsentFields.astro. The submit
+            controls are slotted between the opt-in and the disclosure so the
+            disclosure sits directly beneath the button that acts on it. */}
+        <ConsentFields dark={dark}>
+          <div class="flex gap-3">
+            <button type="button" class:list={['btn btn-lg shrink-0', dark ? 'btn-ghost-light' : 'btn-outline']} data-back>
+              Back
+            </button>
+            <button type="submit" class="btn btn-primary btn-lg flex-1" data-submit>
+              <span data-submit-label>Get My Cash Offer</span>
+            </button>
+          </div>
+        </ConsentFields>
       </div>
 
       <!-- Submission failure fallback: never lose a lead silently. -->

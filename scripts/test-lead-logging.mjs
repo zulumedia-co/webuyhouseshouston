@@ -9,7 +9,8 @@ import assert from 'node:assert';
 
 // leads.ts is plain TypeScript with no runtime imports, so Node's built-in
 // type stripping can load it directly — see the `test:leads` npm script.
-const { parseAndValidate, deliverLeadWithFallback, redactLead, newLeadRef } = await import(
+const { parseAndValidate, deliverLeadWithFallback, redactLead, redactErrorText, newLeadRef } =
+  await import(
   new URL('../src/lib/leads.ts', import.meta.url).href
 );
 
@@ -142,6 +143,47 @@ await checkAsync('a failing CRM with a working fallback delivers, and logs nothi
     globalThis.fetch = originalFetch;
     console.error = realError;
     console.warn = realWarn;
+  }
+});
+
+await checkAsync('a CRM validation error cannot echo customer data into logs', async () => {
+  // The regression guard for the leak this suite previously missed. The old
+  // tests only simulated a bare 504 with no customer data in the body, so they
+  // passed while FlowTrack's error message was quoting the submitted phone and
+  // email straight back into the logs.
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({
+          error: 'Invalid phone number',
+          field: 'phone',
+          value: '(713) 555-8842',
+          contact: 'aurelia.private@example.com',
+        }),
+        { status: 422 },
+      );
+
+    const outcome = await deliverLeadWithFallback(lead, {
+      LEAD_ADAPTER: 'flowtrack',
+      FLOWTRACK_WEBHOOK_URL: 'https://crm.example.com/hook',
+    });
+
+    const raw = JSON.stringify(outcome.attempts);
+    for (const secret of SECRETS) {
+      assert.ok(!raw.includes(secret), `adapter error leaked "${secret}"`);
+    }
+    assert.ok(raw.includes('422'), 'status code should survive — it is the useful part');
+
+    // And the logging boundary scrubs anything an adapter might still emit.
+    const scrubbed = redactErrorText(
+      'CRM rejected: phone (713) 555-8842 for aurelia.private@example.com',
+    );
+    assert.ok(!scrubbed.includes('555-8842'), 'scrubber missed a phone number');
+    assert.ok(!scrubbed.includes('aurelia.private@example.com'), 'scrubber missed an email');
+    assert.ok(redactErrorText('FlowTrack responded 422').includes('422'), 'scrubber ate a status code');
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });
 

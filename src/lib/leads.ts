@@ -78,6 +78,26 @@ export function redactLead(lead: Lead): Record<string, unknown> {
   };
 }
 
+/**
+ * Strips anything that looks like contact information out of an error string.
+ *
+ * Second line of defence. Adapters are written not to embed response bodies in
+ * their errors, but those errors get logged, and a future adapter — or a
+ * provider SDK — could reintroduce customer data without anyone noticing. This
+ * runs at the logging boundary so the guarantee does not depend on every
+ * adapter author remembering.
+ *
+ * Digit runs of seven or more are masked; HTTP status codes and short numbers
+ * survive so the message stays useful.
+ */
+export function redactErrorText(text: string): string {
+  return text
+    .replace(/[^\s@:"']+@[^\s@:"']+\.[A-Za-z]{2,}/g, '[email]')
+    .replace(/(\d[\d\-().\s]{5,}\d)/g, (match) =>
+      match.replace(/\D/g, '').length >= 7 ? '[number]' : match,
+    );
+}
+
 export interface DeliveryOutcome {
   delivered: boolean;
   /** The adapter that succeeded, if any. */
@@ -354,10 +374,25 @@ const flowTrackAdapter: Adapter = async (lead, env) => {
   const res = await crmFetch(url, { method: 'POST', headers, body: JSON.stringify(payload) }, 'FlowTrack');
 
   if (!res.ok) {
-    // Include the response body — CRM validation errors are the most likely
-    // failure here, and the message is what tells us which field is wrong.
-    const body = await res.text().catch(() => '');
-    throw new Error(`FlowTrack responded ${res.status}: ${body.slice(0, 300)}`);
+    // The status alone, deliberately.
+    //
+    // This error message is captured into `attempts` and logged. A CRM
+    // validation rejection routinely echoes the submitted value back — e.g.
+    // `{"error":"Invalid phone","value":"(713) 555-8842"}` — so including the
+    // response body here would put customer contact details straight back into
+    // the logs that redactLead exists to keep them out of. It did, until this
+    // was fixed; see the regression test in scripts/test-lead-logging.mjs.
+    //
+    // When a field-mapping problem genuinely needs the body, set
+    // LEAD_DEBUG_CRM_ERRORS=true temporarily, then turn it back off.
+    if (env.LEAD_DEBUG_CRM_ERRORS === 'true') {
+      const body = await res.text().catch(() => '');
+      throw new Error(
+        `FlowTrack responded ${res.status}: ${body.slice(0, 300)} ` +
+          '[LEAD_DEBUG_CRM_ERRORS is on — this may contain customer data]',
+      );
+    }
+    throw new Error(`FlowTrack responded ${res.status}`);
   }
 };
 

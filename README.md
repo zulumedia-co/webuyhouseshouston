@@ -23,7 +23,8 @@ external requests. A blog post is 9.9 KB gzipped.
 ```bash
 npm run verify:urls   # every legacy URL still resolves (352/352)
 npm run test:form     # end-to-end lead form in a real browser
-npm run test:a11y     # axe-core WCAG 2.1 A/AA across 16 pages × 2 viewports
+npm run test:a11y     # axe-core WCAG 2.1 A/AA across 21 pages × 2 viewports
+npm run test:leads    # PII stays out of logs; consent is never assumed
 npm run shots         # screenshot every page, desktop + mobile
 ```
 
@@ -31,8 +32,8 @@ npm run shots         # screenshot every page, desktop + mobile
 server (`npm run dev`, port 4322) because it exercises the lead API;
 `test:a11y` and `shots` can point at any server via `BASE=`.
 
-Current state: 352/352 URLs resolve, all 10 form checks pass, zero WCAG 2.1
-A/AA violations.
+Current state: 352/352 URLs resolve, 12/12 form checks and 7/7 lead checks pass,
+zero WCAG 2.1 A/AA violations across 21 pages.
 
 ---
 
@@ -99,9 +100,13 @@ Deliberate behaviours worth knowing:
   invites a retry with the trap removed. Two signals are used: a honeypot field
   and a sub-3-second submission timer. Both are conservative — a false positive
   here is a lost customer.
-- **A CRM outage returns 502, not success.** The visitor is told to call
-  instead, and the full lead is written to the server log prefixed
-  `[lead] DELIVERY FAILED` so it can be recovered manually.
+- **A CRM outage returns 502, not success.** The visitor is told to call and
+  given a reference to quote. If the email fallback is configured the lead is
+  delivered that way instead and the visitor still sees success.
+- **Customer details are kept out of logs.** A delivery failure logs a short
+  reference (e.g. `K3X9F2`, also shown to the visitor) plus non-identifying
+  diagnostics. Adapter error messages are scrubbed at the logging boundary, so
+  no provider response can smuggle a phone number or email into a log line.
 - **Forms work without JavaScript.** They are real `<form>` elements with a real
   action. Without JS both steps submit at once and the endpoint 303-redirects.
   Leads are the business; they must not depend on a bundle loading.
@@ -126,6 +131,24 @@ URLs can disappear and 208 images break at once. They now live in
 visible difference.
 
 ---
+
+## Operational notes before launch
+
+- **Configure the email fallback** (`RESEND_API_KEY` + `LEAD_EMAIL_TO`). The most
+  valuable setting after the CRM itself. Without it, a CRM outage is the only
+  remaining path where the full lead is written to the log — because at that
+  point the log is the sole surviving copy. With it configured, that branch is
+  unreachable and the lead is emailed instead.
+- **Restrict who can read production logs, and keep retention short.** Even with
+  the above, logs carry city, ZIP, a name initial and the last four digits of a
+  phone number. Treat them as sensitive.
+- **Consider an alert on `[lead] DELIVERY FAILED`.** It means a real enquiry did
+  not reach anyone — worth knowing within minutes, not at the end of the week.
+- **Leave `LEAD_DEBUG_CRM_ERRORS` unset.** It exists to diagnose field-mapping
+  problems and deliberately logs the CRM's raw response, which can contain
+  customer data. On temporarily, off again afterwards.
+- **Enable STOP and HELP in the CRM before any messaging goes live.** The site
+  publicly promises both, so the promise has to be true.
 
 ## Open items
 

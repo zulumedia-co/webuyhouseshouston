@@ -1,7 +1,9 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHero from '@/components/PageHero.astro';
-import { SITE, CONTACT } from '@/config/site';
+import LegalPage from '@/components/LegalPage.astro';
+import { SITE, CONTACT, CONSENT } from '@/config/site';
+import type { LegalSection } from '@/lib/legal';
 
 /**
  * ⚠️  NEEDS LEGAL REVIEW BEFORE LAUNCH.
@@ -50,16 +52,6 @@ const LAST_UPDATED = 'July 30, 2026';
 const ANALYTICS_ENABLED = false;
 const ADVERTISING_ENABLED = false;
 
-interface Section {
-  heading: string;
-  paragraphs?: string[];
-  bullets?: string[];
-  /** Rendered after the bullet list, when a section needs a closing note. */
-  paragraphs2?: string[];
-  /** Renders the block with a highlighted treatment. */
-  emphasis?: boolean;
-}
-
 /**
  * Deletion and access requests are handled by phone and email. `CONTACT.email`
  * is still null — no address is published anywhere yet — so the email route is
@@ -69,7 +61,7 @@ const contactRoute = CONTACT.email
   ? `email us at ${CONTACT.email} or call ${CONTACT.phone}`
   : `call us on ${CONTACT.phone}`;
 
-const sections: Section[] = [
+const sections: LegalSection[] = [
   {
     heading: 'Who we are',
     paragraphs: [
@@ -104,7 +96,7 @@ const sections: Section[] = [
     paragraphs: [
       'If you give us your phone number, we may contact you by call or text about the property you asked us about. Consent to be contacted is not a condition of any purchase or sale.',
       'You can opt out of text messages at any time by replying STOP to any message from us. Reply HELP for assistance. Message frequency varies, and message and data rates may apply.',
-      'No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Information sharing with subcontractors in support services, such as customer service, is permitted. All other use case categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.',
+      CONSENT.mobileDataClause,
     ],
   },
   {
@@ -218,30 +210,5 @@ const sections: Section[] = [
     crumbs={[{ label: 'Privacy Policy' }]}
   />
 
-  <div class="bg-white py-14 lg:py-20">
-    <div class="container-prose">
-      <p class="text-sm text-ink-subtle">Last updated: {LAST_UPDATED}</p>
-
-      <div class="prose-editorial mt-8">
-        {sections.map((section) => (
-          <>
-            <h2>{section.heading}</h2>
-            {section.paragraphs?.map((p) => <p>{p}</p>)}
-            {section.bullets && (
-              <ul>
-                {section.bullets.map((b) => <li>{b}</li>)}
-              </ul>
-            )}
-            {section.paragraphs2?.map((p) => <p>{p}</p>)}
-          </>
-        ))}
-      </div>
-
-      <p class="mt-12 border-t border-hairline pt-6 text-sm leading-relaxed text-ink-subtle">
-        Nothing on this page is legal advice. If you are dealing with a
-        foreclosure, probate or divorce, please speak to a qualified attorney
-        about your own situation.
-      </p>
-    </div>
-  </div>
+  <LegalPage sections={sections} lastUpdated={LAST_UPDATED} />
 </BaseLayout>

@@ -1,7 +1,9 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHero from '@/components/PageHero.astro';
-import { SITE, CONTACT } from '@/config/site';
+import LegalPage from '@/components/LegalPage.astro';
+import { SITE, CONTACT, CONSENT } from '@/config/site';
+import type { LegalSection } from '@/lib/legal';
 
 /**
  * ⚠️  NEEDS LEGAL REVIEW BEFORE LAUNCH.
@@ -25,16 +27,7 @@ import { SITE, CONTACT } from '@/config/site';
 
 const LAST_UPDATED = 'July 30, 2026';
 
-interface Section {
-  heading: string;
-  paragraphs?: string[];
-  bullets?: string[];
-  /** Rendered after the bullet list, when a section needs a closing note. */
-  paragraphs2?: string[];
-  id?: string;
-}
-
-const sections: Section[] = [
+const sections: LegalSection[] = [
   {
     heading: 'About these terms',
     paragraphs: [
@@ -43,6 +36,7 @@ const sections: Section[] = [
   },
   {
     id: 'messaging',
+    emphasis: true,
     heading: 'Text messaging',
     paragraphs: [
       `If you give us your phone number, ${SITE.name} may send you text messages about the property you contacted us about. If you additionally tick the marketing opt-in on one of our forms, we may send you recurring marketing messages about buying your property.`,
@@ -57,7 +51,7 @@ const sections: Section[] = [
       'Consent to receive marketing messages is never a condition of any purchase, sale or service.',
     ],
     paragraphs2: [
-      'No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Information sharing with subcontractors in support services, such as customer service, is permitted. All other use case categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.',
+      CONSENT.mobileDataClause,
       'Supported carriers include AT&T, Verizon Wireless, T-Mobile, Sprint, Boost, U.S. Cellular, MetroPCS, and others. Carrier support may change.',
     ],
   },
@@ -119,30 +113,5 @@ const sections: Section[] = [
     crumbs={[{ label: 'Terms' }]}
   />
 
-  <div class="bg-white py-14 lg:py-20">
-    <div class="container-prose">
-      <p class="text-sm text-ink-subtle">Last updated: {LAST_UPDATED}</p>
-
-      <div class="prose-editorial mt-8">
-        {sections.map((section) => (
-          <>
-            <h2 id={section.id}>{section.heading}</h2>
-            {section.paragraphs?.map((p) => <p>{p}</p>)}
-            {section.bullets && (
-              <ul>
-                {section.bullets.map((b) => <li>{b}</li>)}
-              </ul>
-            )}
-            {section.paragraphs2?.map((p) => <p>{p}</p>)}
-          </>
-        ))}
-      </div>
-
-      <p class="mt-12 border-t border-hairline pt-6 text-sm leading-relaxed text-ink-subtle">
-        Nothing on this page is legal advice. If you are dealing with a
-        foreclosure, probate or divorce, please speak to a qualified attorney
-        about your own situation.
-      </p>
-    </div>
-  </div>
+  <LegalPage sections={sections} lastUpdated={LAST_UPDATED} />
 </BaseLayout>

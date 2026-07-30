@@ -405,6 +405,24 @@
     font-style: normal;
   }
 
+  /* Highlighted block within long-form legal copy — used for the clause a
+     reader must not skim past (SMS consent). Wrapping a section in an element
+     breaks `.prose-editorial > * + *`, so the child spacing is re-established
+     here rather than the block collapsing into a solid slab of text. */
+  .prose-editorial .prose-callout {
+    border-left: 3px solid var(--color-brass-500);
+    background: var(--color-brass-50);
+    border-radius: 0 0.75rem 0.75rem 0;
+    padding: 1.5rem 1.75rem;
+  }
+  .prose-editorial .prose-callout > * + * {
+    margin-top: 1.25rem;
+  }
+  .prose-editorial .prose-callout > h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+  }
+
   .prose-editorial hr {
     border: 0;
     height: 1px;
