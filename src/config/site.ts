@@ -57,6 +57,34 @@ export const PROMISE = {
   repairs: 'No repairs',
 } as const;
 
+/**
+ * Consent wording shown at the point of collection.
+ *
+ * IMPORTANT — this is 10DLC / A2P and TCPA infrastructure, not decoration.
+ *
+ * To register an A2P messaging campaign, carriers (via The Campaign Registry)
+ * check that the opt-in language appears on the public form, and that the
+ * linked privacy policy states mobile opt-in data is not shared for marketing.
+ * Campaigns are rejected without both. Separately, TCPA statutory damages run
+ * $500–$1,500 *per message*, and cash-buyer businesses are a frequent target,
+ * so marketing consent must be a separate, affirmative, unticked opt-in rather
+ * than a condition of submitting the form.
+ *
+ * `version` is stored with every lead so that if this wording is ever changed
+ * we can still prove exactly what a given person agreed to.
+ *
+ * Do not edit the text without legal review, and bump the version if you do.
+ */
+export const CONSENT = {
+  version: '2026-07-v1',
+  /** Transactional. Shown as inline text; submitting the form is the consent. */
+  transactional:
+    'By submitting this form you agree that We Buy Houses Houston may contact you by phone, text message or email about your property. Consent is not a condition of any purchase. Message and data rates may apply.',
+  /** Marketing. Separate, optional, unticked — never pre-selected. */
+  marketing:
+    'I agree to receive recurring marketing text messages from We Buy Houses Houston at the number provided. Consent is not a condition of purchase. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help.',
+} as const;
+
 export const NAV: Array<{ label: string; href: string }> = [
   { label: 'How It Works', href: '/how-we-buy-houses/' },
   { label: 'Sell Your House', href: '/sell-your-house/' },
@@ -93,6 +121,7 @@ export const FOOTER_NAV: Array<{ heading: string; links: Array<{ label: string; 
       { label: 'Free Resources', href: '/resource-page/' },
       { label: 'Harris County', href: '/harris_county/' },
       { label: 'Privacy Policy', href: '/privacy/' },
+      { label: 'Terms & Messaging', href: '/terms/' },
     ],
   },
 ];

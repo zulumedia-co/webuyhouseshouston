@@ -4,7 +4,7 @@ import PageHero from '@/components/PageHero.astro';
 import Section from '@/components/Section.astro';
 import CtaBand from '@/components/CtaBand.astro';
 import Icon from '@/components/Icon.astro';
-import { CONTACT } from '@/config/site';
+import { CONTACT, CONSENT } from '@/config/site';
 
 const { address } = CONTACT;
 ---
@@ -108,6 +108,7 @@ const { address } = CONTACT;
               </label>
             </div>
             <input type="hidden" name="renderedAt" data-rendered-at value="" />
+            <input type="hidden" name="consentVersion" value={CONSENT.version} />
 
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
@@ -137,9 +138,28 @@ const { address } = CONTACT;
                 placeholder="Tell us a bit about your situation or your property…"></textarea>
             </div>
 
+            <label class="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                name="smsConsent"
+                value="yes"
+                class="mt-0.5 h-4 w-4 shrink-0 rounded border border-hairline accent-brass-500"
+              />
+              <span class="text-[0.8125rem] leading-relaxed text-ink-subtle">
+                {CONSENT.marketing}
+              </span>
+            </label>
+
             <button type="submit" class="btn btn-primary btn-lg w-full" data-submit>
               <span data-submit-label>Send Message</span>
             </button>
+
+            <p class="text-[0.75rem] leading-relaxed text-ink-subtle">
+              {CONSENT.transactional} See our{' '}
+              <a href="/privacy/" class="underline underline-offset-2 hover:no-underline">Privacy Policy</a>
+              {' '}and{' '}
+              <a href="/terms/" class="underline underline-offset-2 hover:no-underline">Messaging Terms</a>.
+            </p>
 
             <div class="hidden rounded-lg border border-danger/30 bg-danger/5 p-4 text-sm" data-form-error role="alert">
               <p class="font-medium text-navy-900">Something went wrong sending your message.</p>

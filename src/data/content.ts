@@ -1,3 +1,5 @@
+import type { IconName } from '@/lib/icons';
+
 /**
  * Structured page content lifted from the legacy site.
  *
@@ -45,7 +47,7 @@ export const PROCESS_STEPS: ProcessStep[] = [
 export interface Situation {
   title: string;
   body: string;
-  icon: 'gavel' | 'key' | 'heart' | 'box' | 'wrench' | 'clock' | 'file' | 'home';
+  icon: IconName;
 }
 
 /**

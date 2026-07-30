@@ -4,80 +4,204 @@ import PageHero from '@/components/PageHero.astro';
 import { SITE, CONTACT } from '@/config/site';
 
 /**
- * Content is carried over from the legacy policy, lightly reorganised into
- * sections. It is reproduced as the client published it — a privacy policy is
- * a legal document and is not ours to rewrite. Flagged to the client that it
- * predates CCPA/GDPR-style language and should get a lawyer's eye.
+ * ⚠️  NEEDS LEGAL REVIEW BEFORE LAUNCH.
+ *
+ * This replaces the legacy Carrot template, which was materially inaccurate:
+ * it described no CRM, no retention practice, no deletion route, and claimed
+ * advertising trackers this site does not run. An inaccurate policy is a worse
+ * position than a dated one, so it has been rewritten to describe what the
+ * site genuinely does — every statement here is checkable against the code in
+ * `src/lib/leads.ts` and `src/pages/api/lead.ts`.
+ *
+ * What is factual (written from the implementation):
+ *   - the exact fields collected, and that they go to a CRM processor
+ *   - that no advertising or analytics trackers are currently installed
+ *   - the SMS/mobile data clause required for A2P 10DLC registration
+ *
+ * What is a RECOMMENDED DEFAULT and must be confirmed by the business:
+ *   - retention periods (24 months for enquiries, 7 years post-transaction)
+ *   - the 45-day response window for rights requests
+ *   - who internally can access lead data
+ *
+ * Not claimed anywhere: compliance with any specific statute. The Texas Data
+ * Privacy and Security Act largely exempts small businesses, so whether it
+ * binds this company is a question for counsel, not for this file. The rights
+ * below are offered as good practice regardless.
+ *
+ * If analytics or advertising pixels are ever added, the "Cookies and
+ * tracking" section becomes false and must be updated the same day.
  */
-const sections = [
+
+const LAST_UPDATED = 'July 30, 2026';
+
+/**
+ * Flip these the day the corresponding tracker actually goes live — not before.
+ *
+ * The business has said analytics is likely to return and advertising is
+ * possible. Describing either as active while it is not would make this policy
+ * false, so the copy below is generated from these flags instead: it states the
+ * current position accurately and flags the intent, and becomes correct
+ * automatically the moment a flag is switched.
+ *
+ * Note for whoever enables these: adding advertising cookies is the point at
+ * which a cookie banner and an opt-out route usually become necessary. Raise it
+ * with counsel then rather than after.
+ */
+const ANALYTICS_ENABLED = false;
+const ADVERTISING_ENABLED = false;
+
+interface Section {
+  heading: string;
+  paragraphs?: string[];
+  bullets?: string[];
+  /** Rendered after the bullet list, when a section needs a closing note. */
+  paragraphs2?: string[];
+  /** Renders the block with a highlighted treatment. */
+  emphasis?: boolean;
+}
+
+/**
+ * Deletion and access requests are handled by phone and email. `CONTACT.email`
+ * is still null — no address is published anywhere yet — so the email route is
+ * only offered once one exists, rather than pointing people at a dead end.
+ */
+const contactRoute = CONTACT.email
+  ? `email us at ${CONTACT.email} or call ${CONTACT.phone}`
+  : `call us on ${CONTACT.phone}`;
+
+const sections: Section[] = [
   {
-    heading: 'What information do we collect?',
+    heading: 'Who we are',
     paragraphs: [
-      'We collect information from you when you subscribe to our newsletter, fill out a form or submit property information.',
-      'We may collect information about your computer, including your IP address, operating system and browser type using Google Analytics. This is to improve browsing for everyone and does not identify any individual.',
-      'When ordering or registering on our site, as appropriate, you may be asked to enter your name, e-mail address, mailing address or phone number. You may, however, visit our site anonymously. We transfer information about you if We Buy Houses Houston is acquired by or merged with another company. In this event, We Buy Houses Houston will notify you before information about you is transferred and becomes subject to a different privacy policy.',
+      `${SITE.name} is a real estate investment company based in Houston, Texas. We buy residential property directly from owners. This policy explains what we collect when you use this website or submit one of our forms, what we do with it, and the choices you have.`,
+      `We are the controller of the information described here. You can reach us using the details at the end of this page.`,
     ],
   },
   {
-    heading: 'What do we use your information for?',
+    heading: 'Information you give us',
     paragraphs: [
-      'Any of the information we collect from you may be used to process transactions and to send periodic emails.',
-      'Your information, whether public or private, will not be sold, exchanged, transferred, or given to any other company for any reason whatsoever, without your consent, other than for the express purpose of delivering the purchased product or service requested.',
-      'The email address you provide may be used to send you information, respond to inquiries, and/or other requests or questions.',
+      'When you submit a cash-offer or contact form, we collect the details you enter so we can evaluate the property and get back to you:',
+    ],
+    bullets: [
+      'Property address, city and ZIP code',
+      'Your name',
+      'Your phone number',
+      'Your email address, if you choose to provide one — it is optional',
+      'Your intended timescale for selling',
+      'Anything you write in the free-text message box',
     ],
   },
   {
-    heading: 'How do we protect your information?',
+    heading: 'Information collected automatically',
     paragraphs: [
-      'We implement a variety of security measures to maintain the safety of your personal information when you enter, submit, or access your personal information.',
+      'Alongside your form submission we record which page the form was on, which link or campaign brought you there, the date and time, and your browser’s user-agent string. We use this to know which pages generate genuine enquiries and to investigate submission problems.',
+      'Our hosting provider keeps standard server logs, which may include IP addresses, as a normal part of running and securing the site.',
     ],
   },
   {
-    heading: 'Do we disclose any information to outside parties?',
+    heading: 'Mobile information and text messages',
+    emphasis: true,
     paragraphs: [
-      'We do not sell, trade, or otherwise transfer to outside parties your personally identifiable information. This does not include trusted third parties who assist us in operating our website, conducting our business, or servicing you, so long as those parties agree to keep this information confidential.',
-      'We may also release your information when we believe release is appropriate to comply with the law, enforce our site policies, or protect ours or others’ rights, property, or safety. However, non-personally identifiable visitor information may be provided to other parties for marketing, advertising, or other uses.',
+      'If you give us your phone number, we may contact you by call or text about the property you asked us about. Consent to be contacted is not a condition of any purchase or sale.',
+      'You can opt out of text messages at any time by replying STOP to any message from us. Reply HELP for assistance. Message frequency varies, and message and data rates may apply.',
+      'No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Information sharing with subcontractors in support services, such as customer service, is permitted. All other use case categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.',
     ],
   },
   {
-    heading: 'Third party links',
+    heading: 'How we use your information',
+    bullets: [
+      'To evaluate your property and prepare a cash offer',
+      'To contact you about that offer and answer your questions',
+      'To carry out a purchase if you accept, including working with a title company',
+      'To keep records required for tax, accounting and legal purposes',
+      'To understand which parts of this website produce genuine enquiries',
+    ],
     paragraphs: [
-      'Occasionally, at our discretion, we may include or offer third party products or services on our website. These third party sites have separate and independent privacy policies. We therefore have no responsibility or liability for the content and activities of these linked sites. Nonetheless, we seek to protect the integrity of our site and welcome any feedback about these sites.',
+      'We do not sell your personal information, and we do not share it with third parties for their own marketing.',
     ],
   },
   {
-    heading: 'Third party services',
+    heading: 'Who we share it with',
     paragraphs: [
-      'In general, the third-party providers used by us will only collect, use and disclose your information to the extent necessary to allow them to perform the services they provide to us.',
-      'However, certain third-party service providers, such as payment gateways and other payment transaction processors, have their own privacy policies in respect to the information we are required to provide to them for your purchase-related transactions. For these providers, we recommend that you read their privacy policies so you can understand the manner in which your personal information will be handled.',
-      'Certain providers may be located in or have facilities located in a different jurisdiction than either you or us. If you elect to proceed with a transaction that involves the services of a third-party service provider, then your information may become subject to the laws of the jurisdiction(s) in which that service provider or its facilities are located.',
-      'Once you leave our website or are redirected to a third-party website or application, you are no longer governed by this Privacy Policy or our website’s Terms of Service.',
+      'We share your information only with parties that help us operate, and only to the extent they need it:',
+    ],
+    bullets: [
+      'Our customer relationship management provider, which stores enquiries on our behalf so we can respond to them',
+      'Our email delivery provider, used to notify us that an enquiry has arrived',
+      'Our website hosting provider',
+      'A title company, and where relevant an attorney or escrow agent, if you decide to sell to us',
+      'Law enforcement or regulators where we are legally required to disclose',
+    ],
+    paragraphs2: [
+      'These providers act on our instructions and are not permitted to use your information for their own purposes. As stated above, mobile opt-in data is excluded from all sharing other than support services.',
     ],
   },
   {
-    heading: 'Remarketing and advertising',
+    heading: 'How long we keep it',
     paragraphs: [
-      'We Buy Houses Houston may use third-party vendor re-marketing tracking cookies, including but not limited to the Google Ads tracking cookie. This means we may continue to show ads to you across the internet. We respect your privacy and are not collecting any identifiable information through the use of Google’s or any other third-party remarketing system.',
-      'Third-party vendors, including Facebook and Google, whose services we use will place cookies on web browsers in order to serve ads based on past visits to our website. This allows us to make special offers and continue to market our services to those who have shown interest.',
-      'We may also permit certain third party companies to help us tailor advertising that we think may be of interest to users, and to collect and use other data about user activities on our site and services.',
+      'If you enquire and we do not end up doing business together, we keep your enquiry for 24 months so that we can recognise you if you come back to us, and then delete it.',
+      'If we purchase your property, we keep records of the transaction for 7 years, which reflects normal tax and real-estate record-keeping periods.',
+      'If you ask us to delete your information sooner, we will — see below.',
     ],
   },
   {
-    heading: 'California Online Privacy Protection Act compliance',
+    heading: 'Your choices and rights',
     paragraphs: [
-      'Because we value your privacy we have taken the necessary precautions to be in compliance with the California Online Privacy Protection Act. We therefore will not distribute your personal information to outside parties without your consent.',
+      'You can ask us to:',
+    ],
+    bullets: [
+      'Tell you what information we hold about you',
+      'Correct anything that is wrong',
+      'Delete your information',
+      'Stop contacting you, by any or all channels',
+      'Provide a copy of what you gave us',
+    ],
+    paragraphs2: [
+      `To make any of these requests, ${contactRoute}. We will delete your information when you ask us to. We aim to deal with requests promptly and will respond within 45 days at the latest. We will not treat you differently for exercising any of these rights.`,
+      'To stop text messages immediately, reply STOP to any message. To stop emails, use the unsubscribe link or simply tell us.',
     ],
   },
   {
-    heading: 'Children’s Online Privacy Protection Act compliance',
+    heading: 'Cookies and tracking',
     paragraphs: [
-      'We are in compliance with the requirements of COPPA (Children’s Online Privacy Protection Act). We do not collect any information from anyone under 13 years of age.',
+      ANALYTICS_ENABLED
+        ? 'We use Google Analytics to understand how people find and use this website — which pages are read, and which ones lead to an enquiry. Google Analytics sets cookies and receives your IP address. We use it for statistics about the site, not to identify you personally.'
+        : 'This website does not currently run analytics cookies or trackers. We expect to add website analytics in future to understand which pages are useful; when we do, we will update this section before it goes live.',
+      ADVERTISING_ENABLED
+        ? 'We also run advertising that uses cookies to show our ads to people who have visited this site before. You can opt out of personalised advertising through your browser settings or through the advertising provider’s own controls.'
+        : 'We do not currently run advertising cookies or remarketing pixels, and we do not follow you across other websites. We may advertise in future. If we do, we will say so here, describe what is used, and explain how to opt out — before anything is switched on.',
+      'Whatever we use, we will not sell your personal information, and mobile opt-in data is never shared for marketing, as described above.',
     ],
   },
   {
-    heading: 'Contacting us',
+    heading: 'How we protect your information',
     paragraphs: [
-      `If there are any questions regarding this privacy policy you may contact us at ${CONTACT.phone}, or by post at ${CONTACT.address.street}, ${CONTACT.address.suite}, ${CONTACT.address.city}, ${CONTACT.address.state} ${CONTACT.address.zip}.`,
+      'This site is served over an encrypted connection, and form submissions are transmitted encrypted. Access to enquiry records is limited to the people who need it in order to respond to you and to complete a purchase.',
+      'No method of transmission or storage is completely secure, and we cannot guarantee absolute security.',
+    ],
+  },
+  {
+    heading: 'Children',
+    paragraphs: [
+      'This site is intended for property owners and is not directed at children. We do not knowingly collect information from anyone under 13. If you believe a child has provided us information, contact us and we will delete it.',
+    ],
+  },
+  {
+    heading: 'Other websites',
+    paragraphs: [
+      'Some pages link to outside resources, such as government foreclosure-prevention guidance. Those sites have their own privacy policies and we are not responsible for their content or practices.',
+    ],
+  },
+  {
+    heading: 'Changes to this policy',
+    paragraphs: [
+      'If we change how we handle your information, we will update this page and change the date shown at the top. Material changes will be reflected here before they take effect.',
+    ],
+  },
+  {
+    heading: 'Contact us',
+    paragraphs: [
+      `If you have any question about this policy, or want to exercise any of the rights described above, ${contactRoute}, or write to us at ${CONTACT.address.street}, ${CONTACT.address.suite}, ${CONTACT.address.city}, ${CONTACT.address.state} ${CONTACT.address.zip}.`,
     ],
   },
 ];
@@ -85,25 +209,39 @@ const sections = [
 
 <BaseLayout
   title="Privacy Policy"
-  description={`How ${SITE.name} collects, uses and protects your information.`}
+  description={`How ${SITE.name} collects, uses, shares and protects your information, including text-message consent and how to opt out.`}
 >
   <PageHero
     eyebrow="Legal"
     title="Privacy Policy"
-    lead="How we collect, use and protect the information you share with us."
+    lead="What we collect when you contact us, what we do with it, who sees it, how long we keep it, and how to tell us to stop."
     crumbs={[{ label: 'Privacy Policy' }]}
   />
 
   <div class="bg-white py-14 lg:py-20">
     <div class="container-prose">
-      <div class="prose-editorial">
+      <p class="text-sm text-ink-subtle">Last updated: {LAST_UPDATED}</p>
+
+      <div class="prose-editorial mt-8">
         {sections.map((section) => (
           <>
             <h2>{section.heading}</h2>
-            {section.paragraphs.map((p) => <p>{p}</p>)}
+            {section.paragraphs?.map((p) => <p>{p}</p>)}
+            {section.bullets && (
+              <ul>
+                {section.bullets.map((b) => <li>{b}</li>)}
+              </ul>
+            )}
+            {section.paragraphs2?.map((p) => <p>{p}</p>)}
           </>
         ))}
       </div>
+
+      <p class="mt-12 border-t border-hairline pt-6 text-sm leading-relaxed text-ink-subtle">
+        Nothing on this page is legal advice. If you are dealing with a
+        foreclosure, probate or divorce, please speak to a qualified attorney
+        about your own situation.
+      </p>
     </div>
   </div>
 </BaseLayout>

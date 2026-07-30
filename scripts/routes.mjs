@@ -25,6 +25,7 @@ export const ROUTES = [
   ['resources', '/resource-page/'],
   ['contact', '/contact-us/'],
   ['privacy', '/privacy/'],
+  ['terms', '/terms/'],
   ['blog', '/blog/'],
   ['blog-page-2', '/blog/page/2/'],
   ['post', '/blog/how-to-sell-a-house-with-liens-in-houston/'],

@@ -15,7 +15,8 @@
     "verify:urls": "python3 scripts/verify-urls.py",
     "test:form": "node scripts/test-form.mjs",
     "test:a11y": "node scripts/a11y.mjs",
-    "shots": "node scripts/shots.mjs"
+    "shots": "node scripts/shots.mjs",
+    "test:leads": "node --experimental-strip-types scripts/test-lead-logging.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

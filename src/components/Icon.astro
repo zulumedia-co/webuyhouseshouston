@@ -1,16 +1,22 @@
 ---
 /** Inline stroke icons. Inlined rather than sprited — there are few enough
  *  that a sprite request would cost more than it saves. */
+import type { IconName } from '@/lib/icons';
+
 interface Props {
-  name:
-    | 'gavel' | 'key' | 'heart' | 'box' | 'wrench' | 'clock' | 'file' | 'home'
-    | 'check' | 'phone' | 'arrow-right' | 'shield' | 'cash' | 'calendar' | 'x';
+  name: IconName;
   class?: string;
 }
 
 const { name, class: className = 'h-6 w-6' } = Astro.props;
 
-const paths: Record<string, string> = {
+/**
+ * `satisfies Record<IconName, string>` ties this map to the union above, so
+ * adding a name without its path data is a build error rather than an
+ * invisible icon on the live site. Typing it as `Record<string, string>`
+ * compiled happily and resolved to `undefined` at runtime.
+ */
+const paths = {
   gavel: 'M14 13l-7.5 7.5a2.12 2.12 0 0 1-3-3L11 10m3 3 3.5-3.5m-3.5 3.5-3-3m3.5-.5L17.5 6m-3.5 3.5-3-3M17.5 6 21 9.5M17.5 6 14 2.5M4 21h7',
   key: 'M15.5 7.5a4.5 4.5 0 1 1-3.4 7.44L10 17h-2v2H6v2H2v-4l6.06-6.06A4.5 4.5 0 1 1 15.5 7.5Zm1.5 1.5h.01',
   heart: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z',
@@ -26,7 +32,7 @@ const paths: Record<string, string> = {
   cash: 'M2 7h20v10H2V7Zm10 5a2.5 2.5 0 1 0 0-.01M6 10v.01M18 14v.01',
   calendar: 'M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z',
   x: 'm6 6 12 12M18 6 6 18',
-};
+} satisfies Record<IconName, string>;
 ---
 
 <svg

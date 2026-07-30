@@ -25,6 +25,8 @@ if a name differs, that value silently lands nowhere.
 | `property_zip` | Text | No | `77034` | Optional; sent as `""` when not given |
 | `timeline` | Dropdown | No | `asap` | One of the four values below, or `""` |
 | `message` | Long text | No | `My mother passed and…` | Only the contact form collects this; `""` from every offer form |
+| `sms_consent` | Text | Yes | `yes` / `no` | **Compliance-critical.** Whether the marketing-SMS box was ticked — see below |
+| `consent_version` | Text | Yes | `2026-07-v1` | Which wording they were shown, for the consent audit trail |
 | `lead_source` | Text | Yes | `homepage-hero` | **Which page/placement produced the lead** — see below |
 | `page_path` | Text | Yes | `/avoiding-foreclosure/` | URL the form was submitted from |
 | `submitted_at` | Date/Text | Yes | `2026-07-28T04:12:33.918Z` | ISO 8601, UTC |
@@ -59,6 +61,41 @@ blog:<post-slug>           e.g. blog:how-to-sell-a-house-with-liens-in-houston
 Blog leads carry the specific article slug, so you can see exactly which of the
 335 posts convert. Treat this as a free-text field, not a fixed dropdown — new
 pages will add new values.
+
+---
+
+## 1a. Text messaging — read before sending a single message
+
+`sms_consent` is the field that keeps this business out of trouble. Two
+different things are being tracked, and they are not interchangeable:
+
+- **Transactional.** Someone submitted a form asking about their property, so
+  replying by text about *that property* is expected and covered by the
+  disclosure shown above the submit button. This applies to every lead.
+- **Marketing** — recurring promotional messages, drip campaigns, "still
+  thinking about selling?" follow-ups. This requires `sms_consent: yes`. Only
+  ever send these to numbers where that field says yes.
+
+Why it matters: TCPA statutory damages are **$500–$1,500 per message**, and
+cash-buyer businesses are among the most frequently sued. A single drip campaign
+sent to a few hundred non-consenting numbers is an existential number, not a
+fine. `consent_version` records which wording the person actually saw, so
+consent stays provable even after the copy is reworded.
+
+**If you set up A2P 10DLC registration for the Zulu number**, the registration
+will ask for the opt-in evidence. Point it at:
+
+- Opt-in screenshot: the cash-offer form on any page, e.g. `/get-a-cash-offer-today/`
+- Privacy policy URL: `https://webuyhouseshouston.com/privacy/`
+- Terms / messaging disclosures URL: `https://webuyhouseshouston.com/terms/`
+
+Both pages carry the mobile-data clause carriers look for, and the form shows the
+opt-in language. Registrations are routinely rejected when any of those three is
+missing — all three are now in place.
+
+Whoever sends the messages must also honour **STOP** and **HELP** automatically.
+FlowTrack/CloseGPT handles this for you, but confirm it is switched on: the site
+promises both, so the promise has to be true.
 
 ---
 
@@ -114,6 +151,8 @@ Authorization: Bearer <FLOWTRACK_API_KEY>   # only when the key is set
   "property_zip": "77034",
   "timeline": "asap",
   "message": "",
+  "sms_consent": "yes",
+  "consent_version": "2026-07-v1",
   "lead_source": "blog:how-to-sell-a-house-with-liens-in-houston",
   "page_path": "/blog/how-to-sell-a-house-with-liens-in-houston/",
   "submitted_at": "2026-07-28T04:12:33.918Z"
@@ -124,9 +163,21 @@ Every key is always present. Optional fields are sent as `""` rather than
 omitted, so the CRM never receives a missing-key error.
 
 Any 2xx response is treated as success. Anything else makes the site show the
-visitor an error telling them to call 713-730-9000 instead, and writes the full
-lead to the server log prefixed `[lead] DELIVERY FAILED` so it can be recovered
-by hand. A CRM outage will never look like a successful submission.
+visitor an error telling them to call 713-730-9000, quoting a short reference
+code such as `K3X9F2`.
+
+A CRM outage never looks like a successful submission. What happens on failure:
+
+1. If the Resend fallback is configured, the lead is **emailed instead** and the
+   visitor still sees success — the lead is not lost.
+2. The failure is logged as `[lead] DELIVERY FAILED` with the reference code and
+   non-identifying diagnostics. Customer contact details are **not** written to
+   logs.
+3. Only if *every* delivery route fails does the full record get logged, clearly
+   marked, because at that point it is the sole surviving copy.
+
+Configure `RESEND_API_KEY` and `LEAD_EMAIL_TO` and step 3 stops being reachable.
+That is the recommended setup even with the CRM working.
 
 ---
 

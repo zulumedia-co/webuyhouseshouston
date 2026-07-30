@@ -1,5 +1,12 @@
 import type { APIRoute } from 'astro';
-import { parseAndValidate, isSpam, deliverLead, escapeHtml } from '@/lib/leads';
+import {
+  parseAndValidate,
+  isSpam,
+  deliverLeadWithFallback,
+  redactLead,
+  newLeadRef,
+  escapeHtml,
+} from '@/lib/leads';
 import { CONTACT } from '@/config/site';
 
 // The only non-static route on the site. Everything else is prerendered.
@@ -131,26 +138,56 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
-  try {
-    await deliverLead(lead, import.meta.env as unknown as Record<string, string | undefined>);
-  } catch (err) {
-    // A CRM outage must never look like a successful submission — the visitor
-    // needs to know to call instead. The lead is logged so it is recoverable
-    // from server logs even if delivery failed.
-    console.error('[lead] DELIVERY FAILED — recover from this log:', JSON.stringify(lead), err);
+  const ref = newLeadRef();
+  const outcome = await deliverLeadWithFallback(
+    lead,
+    import.meta.env as unknown as Record<string, string | undefined>,
+  );
+
+  if (!outcome.delivered) {
+    // Diagnostics carry no personal details — see redactLead. The reference is
+    // shown to the visitor too, so a support call can be tied to these lines.
+    console.error('[lead] DELIVERY FAILED', {
+      ref,
+      attempts: outcome.attempts,
+      lead: redactLead(lead),
+    });
+
+    // Last resort only. Every delivery route has failed, so this log line is
+    // the sole surviving copy of the lead — at that point losing the customer
+    // outright is the greater harm. Configure the Resend fallback
+    // (RESEND_API_KEY + LEAD_EMAIL_TO) and this branch stops being reachable.
+    if (outcome.needsLogRecovery) {
+      console.error(
+        `[lead] ${ref} NO DELIVERY PATH SUCCEEDED — full payload logged for manual recovery. ` +
+          'Configure a fallback so customer details stop being written here:',
+        JSON.stringify(lead),
+      );
+    }
 
     if (wantsJson) {
       return json(502, {
         ok: false,
-        error: `We could not submit your request. Please call us at ${CONTACT.phone}.`,
+        ref,
+        error: `We could not submit your request. Please call us at ${CONTACT.phone} and quote reference ${ref}.`,
       });
     }
     return errorPage(
       502,
       "We couldn't submit your request",
-      'Your details reached us but we could not pass them on. Nothing is lost — but the fastest way to get your offer moving is to call.',
+      `Your details reached us but we could not pass them on. Quote reference <strong>${escapeHtml(ref)}</strong> when you call and we will pick up where you left off.`,
       backTo,
     );
+  }
+
+  if (outcome.attempts.length > 0) {
+    // Delivered, but not by the first route. Worth surfacing: the primary CRM
+    // is failing even though visitors are seeing success.
+    console.warn('[lead] delivered via fallback', {
+      ref,
+      via: outcome.via,
+      failed: outcome.attempts,
+    });
   }
 
   return success();
