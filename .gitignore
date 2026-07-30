@@ -1,6 +1,6 @@
 # Build output
 dist/
-.vercel/
+.wrangler/
 .astro/
 
 # Dependencies

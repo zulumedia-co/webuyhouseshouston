@@ -1,0 +1,176 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import OfferForm from '@/components/OfferForm.astro';
+import ProcessSteps from '@/components/ProcessSteps.astro';
+import SituationsGrid from '@/components/SituationsGrid.astro';
+import ComparisonTable from '@/components/ComparisonTable.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import Icon from '@/components/Icon.astro';
+import { CONTACT, SITE } from '@/config/site';
+import { TRUST_POINTS } from '@/data/content';
+
+/**
+ * Shared template for the geo-targeted landing pages. The legacy site had two
+ * near-identical Harris County URLs; both are kept live (URL preservation) and
+ * both render through here so the copy can never drift apart.
+ */
+interface Props {
+  /** e.g. "Harris County" */
+  area: string;
+  title: string;
+  description: string;
+  source: string;
+  /** Neighborhoods / cities listed as served. */
+  places?: string[];
+  /** Canonical URL, used when two paths serve the same content. */
+  canonical?: string;
+}
+
+const { area, title, description, source, places = [], canonical } = Astro.props;
+
+const areaSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  serviceType: 'Cash home buying',
+  provider: { '@id': `${SITE.url}/#business` },
+  areaServed: { '@type': 'AdministrativeArea', name: area },
+  description,
+};
+---
+
+<BaseLayout title={title} description={description} canonical={canonical} schema={[areaSchema]}>
+  <section class="relative overflow-hidden bg-navy-900 grain">
+    <div
+      class="pointer-events-none absolute -left-40 -top-24 h-[32rem] w-[32rem] rounded-full bg-brass-500/[0.08] blur-3xl"
+      aria-hidden="true"
+    ></div>
+
+    <div class="container-page relative pb-16 pt-10 lg:pb-20 lg:pt-12">
+      <Breadcrumbs items={[{ label: area }]} class="mb-10" />
+
+      <div class="grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+        <div class="lg:col-span-6">
+          <p class="eyebrow eyebrow-light">{area}, Texas</p>
+          <h1
+            class="mt-5 text-balance font-display text-[2.125rem] font-semibold leading-[1.1] tracking-tight text-white sm:text-display-lg lg:text-display-xl"
+          >
+            Sell your house fast in {area}
+          </h1>
+          <p class="mt-6 max-w-xl text-pretty text-lg leading-relaxed text-white/70">
+            No fees. No commissions. You'll get a fair cash offer, you choose the
+            closing date, and we pay all the costs. We buy houses throughout
+            {area} in any condition and at any price.
+          </p>
+
+          <ul class="mt-8 grid gap-3 sm:grid-cols-2">
+            {[
+              'Fair all-cash offer within 24 hours',
+              'Close in as little as 7 days',
+              'No cleaning, no repairs, no showings',
+              'No long-term agent contracts',
+            ].map((item) => (
+              <li class="flex items-start gap-2.5 text-[0.9375rem] text-white/80">
+                <Icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brass-400" />
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+            <a href="#offer" class="btn btn-primary btn-lg">
+              Get My Cash Offer
+              <Icon name="arrow-right" class="h-4 w-4" />
+            </a>
+            <a href={CONTACT.phoneHref} class="btn btn-ghost-light btn-lg">
+              <Icon name="phone" class="h-4 w-4" />
+              {CONTACT.phone}
+            </a>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 xl:col-span-5 xl:col-start-8" id="offer">
+          <OfferForm
+            source={source}
+            heading={`What's your ${area} house worth in cash?`}
+            subheading="Tell us where the property is and we'll come back within 24 hours."
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="border-b border-hairline bg-white">
+    <div class="container-page">
+      <dl class="grid grid-cols-2 divide-hairline lg:grid-cols-4 lg:divide-x">
+        {TRUST_POINTS.map((point) => (
+          <div class="border-b border-hairline px-2 py-8 text-center lg:border-b-0 lg:px-6">
+            <dt class="font-display text-display-md font-semibold tracking-tight text-navy-900">
+              {point.stat}
+            </dt>
+            <dd class="mt-1.5 text-sm text-ink-muted">{point.label}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+
+  <Section tone="ivory">
+    <SectionHeading
+      eyebrow={`Why ${area} homeowners call us`}
+      title="We buy houses in situations agents can't help with"
+      lead={`Foreclosure, divorce, relocation, an underwater mortgage, liens, an inherited or vacant property, falling behind on payments, downsizing, or a house that needs more work than it's worth. We handle all of it across ${area}.`}
+    />
+    <div class="mt-12">
+      <SituationsGrid />
+    </div>
+  </Section>
+
+  <Section tone="navy">
+    <SectionHeading
+      eyebrow="How it works"
+      title={`Selling a ${area} house, start to finish`}
+      tone="light"
+      align="center"
+    />
+    <div class="mt-14">
+      <ProcessSteps tone="light" />
+    </div>
+  </Section>
+
+  <Section tone="white">
+    <SectionHeading
+      eyebrow="Compare your options"
+      title={`Listing with a ${area} agent vs. selling direct`}
+      lead="A higher asking price is not the same thing as more money in your pocket once commissions, closing costs, repairs and three months of holding costs are accounted for."
+    />
+    <div class="mt-12">
+      <ComparisonTable />
+    </div>
+  </Section>
+
+  {places.length > 0 && (
+    <Section tone="ivory" space="tight">
+      <SectionHeading eyebrow="Where we buy" title={`Areas we cover in and around ${area}`} />
+      <ul class="mt-8 flex flex-wrap gap-2.5">
+        {places.map((place) => (
+          <li class="rounded-full bg-white px-4 py-2 text-sm text-ink-muted ring-1 ring-navy-900/[0.06]">
+            {place}
+          </li>
+        ))}
+      </ul>
+      <p class="mt-6 text-ink-muted">
+        Don't see your area? We still want to hear from you — call
+        <a href={CONTACT.phoneHref} class="font-semibold text-navy-900 underline decoration-brass-500 underline-offset-4">
+          {CONTACT.phone}
+        </a>.
+      </p>
+    </Section>
+  )}
+
+  <CtaBand
+    title={`Ready to see what we'd pay for your ${area} house?`}
+  />
+</BaseLayout>

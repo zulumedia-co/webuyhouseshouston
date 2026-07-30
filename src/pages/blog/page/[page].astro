@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import PostCard from '@/components/PostCard.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Pagination from '@/components/Pagination.astro';
+import { byNewest } from '@/lib/posts';
+import { PER_PAGE } from '@/lib/pagination';
+
+/**
+ * Pages 2..n only. Page 1 lives at /blog/ so the legacy URL is preserved
+ * exactly — hence the separate /blog/page/N/ namespace, which also keeps
+ * these routes from colliding with /blog/[slug].
+ */
+export const getStaticPaths = (async () => {
+  const posts = (await getCollection('blog')).sort(byNewest);
+  const totalPages = Math.ceil(posts.length / PER_PAGE);
+
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => {
+    const page = i + 2;
+    return {
+      params: { page: String(page) },
+      props: {
+        posts: posts.slice((page - 1) * PER_PAGE, page * PER_PAGE),
+        page,
+        totalPages,
+      },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+const { posts, page, totalPages } = Astro.props;
+---
+
+<BaseLayout
+  title={`Houston Real Estate Blog — Page ${page}`}
+  description="Straight, practical advice on selling a house in Houston — foreclosure, probate, inherited property, repairs, liens, divorce and more."
+>
+  <PageHero
+    eyebrow={`Page ${page} of ${totalPages}`}
+    title="Straight answers about selling a house in Houston"
+    crumbs={[{ label: 'Blog', href: '/blog/' }, { label: `Page ${page}` }]}
+  />
+
+  <div class="bg-white py-14 lg:py-20">
+    <div class="container-page">
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => <PostCard post={post} />)}
+      </div>
+
+      <Pagination current={page} total={totalPages} class="mt-14" />
+    </div>
+  </div>
+
+  <CtaBand />
+</BaseLayout>

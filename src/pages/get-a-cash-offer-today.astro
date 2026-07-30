@@ -1,0 +1,120 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import OfferForm from '@/components/OfferForm.astro';
+import ProcessSteps from '@/components/ProcessSteps.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import Icon from '@/components/Icon.astro';
+import { CONTACT } from '@/config/site';
+import { TRUST_POINTS } from '@/data/content';
+---
+
+<BaseLayout
+  title="Get A Cash Offer Today — Sell Your Houston House Fast"
+  description="Get a fair, written, all-cash offer on your Houston house within 24 hours. Any condition, any price range. No fees, no commissions, no obligation."
+  hideMobileBar
+>
+  <section class="relative overflow-hidden bg-navy-900 grain">
+    <div
+      class="pointer-events-none absolute -left-40 -top-24 h-[32rem] w-[32rem] rounded-full bg-brass-500/[0.08] blur-3xl"
+      aria-hidden="true"
+    ></div>
+
+    <div class="container-page relative pb-16 pt-10 lg:pb-24 lg:pt-12">
+      <Breadcrumbs items={[{ label: 'Get A Cash Offer Today' }]} class="mb-10" />
+
+      <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+        <div class="lg:col-span-6">
+          <p class="eyebrow eyebrow-light">Free · No obligation</p>
+          <h1
+            class="mt-5 text-balance font-display text-[2.125rem] font-semibold leading-[1.1] tracking-tight text-white sm:text-display-lg lg:text-display-xl"
+          >
+            Find out what we can pay for your house
+          </h1>
+          <p class="mt-6 max-w-xl text-pretty text-lg leading-relaxed text-white/70">
+            Fill in the form and we'll review your property and come back to you
+            within 24 hours with a fair, written, all-cash offer. There is no
+            cost, no pressure, and absolutely no obligation to accept.
+          </p>
+
+          <ul class="mt-9 space-y-4">
+            {[
+              {
+                title: 'We buy in any condition',
+                body: 'Fire, water, mold, foundation, code violations, hoarding, or simply tired. We have seen it and we will still make an offer.',
+              },
+              {
+                title: 'We pay every cost',
+                body: 'No commissions, no fees, no closing costs, no repairs. What we offer is what you walk away with, minus any mortgage payoff.',
+              },
+              {
+                title: 'You choose the closing date',
+                body: 'Need to close in 7 days? We can. Need three months to find your next place? That works too.',
+              },
+            ].map((item) => (
+              <li class="flex gap-4">
+                <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brass-500/12 text-brass-400">
+                  <Icon name="check" class="h-4 w-4" />
+                </span>
+                <div>
+                  <h2 class="font-display text-lg font-semibold tracking-tight text-white">
+                    {item.title}
+                  </h2>
+                  <p class="mt-1 text-[0.9375rem] leading-relaxed text-white/60">{item.body}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div class="mt-10 rounded-xl border border-white/10 bg-white/[0.04] p-5">
+            <p class="text-sm text-white/60">Prefer to talk it through?</p>
+            <a
+              href={CONTACT.phoneHref}
+              class="mt-1 inline-flex items-center gap-2 font-display text-2xl font-semibold tracking-tight text-white transition-colors hover:text-brass-300"
+              data-analytics="offer-page-call"
+            >
+              <Icon name="phone" class="h-5 w-5 text-brass-400" />
+              {CONTACT.phone}
+            </a>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 xl:col-span-5 xl:col-start-8">
+          <OfferForm
+            source="get-a-cash-offer-today"
+            heading="Get your fair cash offer"
+            subheading="Two quick steps. We'll respond within 24 hours."
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="border-b border-hairline bg-white">
+    <div class="container-page">
+      <dl class="grid grid-cols-2 divide-hairline lg:grid-cols-4 lg:divide-x">
+        {TRUST_POINTS.map((point) => (
+          <div class="border-b border-hairline px-2 py-8 text-center lg:border-b-0 lg:px-6">
+            <dt class="font-display text-display-md font-semibold tracking-tight text-navy-900">
+              {point.stat}
+            </dt>
+            <dd class="mt-1.5 text-sm text-ink-muted">{point.label}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+
+  <Section tone="ivory">
+    <SectionHeading
+      eyebrow="What happens next"
+      title="Here is exactly what to expect"
+      align="center"
+      lead="No mystery, no pressure, and no obligation at any stage."
+    />
+    <div class="mt-14">
+      <ProcessSteps />
+    </div>
+  </Section>
+</BaseLayout>

@@ -1,0 +1,131 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, readingTime, excerpt, leadImage } from '@/lib/posts';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  /** `feature` renders larger, for the first item in a listing. */
+  variant?: 'default' | 'feature' | 'compact';
+}
+
+const { post, variant = 'default' } = Astro.props;
+const href = `/blog/${post.id}/`;
+const image = leadImage(post);
+const summary = excerpt(post, variant === 'feature' ? 200 : 130);
+const minutes = readingTime(post.body ?? '');
+---
+
+{variant === 'compact' ? (
+  <article class="group">
+    <a href={href} class="flex gap-4">
+      {image && (
+        <img
+          src={image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          class="h-16 w-20 shrink-0 rounded-lg object-cover ring-1 ring-navy-900/[0.06]"
+        />
+      )}
+      <div class="min-w-0">
+        <h3 class="line-clamp-2 font-display text-[0.9375rem] font-semibold leading-snug tracking-tight text-navy-900 transition-colors group-hover:text-brass-700">
+          {post.data.title}
+        </h3>
+        <p class="mt-1.5 text-xs text-ink-subtle">
+          <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+        </p>
+      </div>
+    </a>
+  </article>
+) : (
+  <article
+    class:list={[
+      'group relative flex flex-col overflow-hidden rounded-xl bg-white ring-1 ring-navy-900/[0.06] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card',
+      variant === 'feature' && 'lg:flex-row',
+    ]}
+  >
+    {/* Decorative only — a <div>, not a link. It was previously an anchor that
+        was simultaneously clickable and `aria-hidden`, i.e. interactive but
+        absent from the accessibility tree. The whole card is the link now. */}
+    <div
+      class:list={[
+        'block shrink-0 overflow-hidden bg-ivory-200',
+        variant === 'feature' ? 'lg:w-[45%]' : '',
+      ]}
+    >
+      {image ? (
+        <img
+          src={image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          class:list={[
+            'w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]',
+            variant === 'feature' ? 'h-56 lg:h-full lg:min-h-[19rem]' : 'h-44',
+          ]}
+        />
+      ) : (
+        // No image on ~30% of legacy posts. A typographic placeholder in brand
+        // colors beats a gray box or a stock photo that means nothing.
+        <div
+          class:list={[
+            'flex w-full items-center justify-center bg-navy-900 grain',
+            variant === 'feature' ? 'h-56 lg:h-full lg:min-h-[19rem]' : 'h-44',
+          ]}
+        >
+          <span class="font-display text-2xl font-semibold tracking-tight text-brass-500/40">
+            Houston
+          </span>
+        </div>
+      )}
+    </div>
+
+    <div class:list={['flex flex-1 flex-col p-6', variant === 'feature' && 'lg:p-8']}>
+      <div class="flex items-center gap-2 text-xs text-ink-subtle">
+        <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{minutes} min read</span>
+      </div>
+
+      <h3
+        class:list={[
+          'mt-3 text-balance font-display font-semibold tracking-tight text-navy-900',
+          variant === 'feature' ? 'text-2xl lg:text-[1.75rem]' : 'text-lg',
+        ]}
+      >
+        {/* Stretched link: the <span> covers the whole card, so the entire
+            card is one click target while the accessible name stays the title.
+            Requires `relative` on the <article> — without a positioned
+            ancestor it sized itself against the viewport and overlapped
+            neighbouring cards on mobile. */}
+        <a href={href} class="transition-colors group-hover:text-brass-700">
+          <span class="absolute inset-0 z-10" aria-hidden="true"></span>
+          {post.data.title}
+        </a>
+      </h3>
+
+      <p
+        class:list={[
+          'mt-3 text-pretty leading-relaxed text-ink-muted',
+          variant === 'feature' ? 'text-base' : 'text-[0.9375rem] line-clamp-3',
+        ]}
+      >
+        {summary}
+      </p>
+
+      <p class="mt-auto pt-5 text-sm font-semibold text-brass-700">
+        <span class="inline-flex items-center gap-1.5">
+          Read article
+          <svg
+            class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+      </p>
+    </div>
+  </article>
+)}

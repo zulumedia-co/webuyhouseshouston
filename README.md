@@ -14,6 +14,12 @@ npm run dev      # http://localhost:4321
 npm run build    # static build + one serverless function for leads
 ```
 
+**Node 22.11 or later** — `.nvmrc` pins it, and `engines.node` enforces it on
+install. `npm run test:leads` imports TypeScript directly via
+`--experimental-strip-types`, which does not exist before Node 22.6, so on an
+older runtime it fails with an unrecognised-flag error rather than anything
+that points at the cause.
+
 **Performance:** the homepage is 26.3 KB gzipped on first load (15.3 KB HTML +
 11 KB CSS) and ships 3.3 KB of inline JavaScript — no framework runtime, no
 external requests. A blog post is 9.9 KB gzipped.
@@ -23,16 +29,22 @@ external requests. A blog post is 9.9 KB gzipped.
 ```bash
 npm run verify:urls   # every legacy URL still resolves (352/352)
 npm run test:form     # end-to-end lead form in a real browser
-npm run test:a11y     # axe-core WCAG 2.1 A/AA across 16 pages × 2 viewports
+npm run test:a11y     # axe-core WCAG 2.1 A/AA across 21 pages × 2 viewports
+npm run test:leads    # PII stays out of logs; consent is never assumed
 npm run shots         # screenshot every page, desktop + mobile
 ```
 
-`test:form` and `test:a11y` need a server running. `test:form` needs the dev
-server (`npm run dev`, port 4322) because it exercises the lead API;
-`test:a11y` and `shots` can point at any server via `BASE=`.
+All of these expect a server on **port 4321**, which is what `npm run dev`
+starts. `test:form` specifically needs the dev server, because it exercises the
+lead API; the others are happy against a static preview too. Point any of them
+elsewhere with `BASE=http://localhost:1234 npm run test:a11y`.
 
-Current state: 352/352 URLs resolve, all 10 form checks pass, zero WCAG 2.1
-A/AA violations.
+The dev server takes ~35s to answer its first request while Vite compiles the
+335 posts. `test:form` warms its routes first, so this shows up as a slow start
+rather than a failure.
+
+Current state: 352/352 URLs resolve, 12/12 form checks and 7/7 lead checks pass,
+zero WCAG 2.1 A/AA violations across 21 pages.
 
 ---
 
@@ -82,9 +94,14 @@ To reskin this for Guillermo's next site, the bulk of the work is
 
 ## Lead capture
 
-Forms post to `/api/lead`, which validates, filters spam, then hands off to a
-CRM adapter chosen by the `LEAD_ADAPTER` environment variable. See
-`.env.example`.
+Forms post to `/api/lead/`, which validates, filters spam, then hands off to a
+CRM adapter chosen by the `LEAD_ADAPTER` environment variable.
+
+**Production target is `flowtrack`** — app.zulumedia.co, a FlowTrack/CloseGPT
+white-label. The adapter is written. **See [`docs/crm-integration.md`](docs/crm-integration.md)
+for the exact form fields to create in the CRM and what to send back**, and
+[`.env.example`](.env.example) for every environment variable involved —
+adapter selection, CRM credentials, and the email fallback.
 
 **This is unconfigured until you set `LEAD_ADAPTER`.** Out of the box it uses
 the `console` adapter, which logs the lead and does nothing else. The site will
@@ -96,9 +113,14 @@ Deliberate behaviours worth knowing:
   invites a retry with the trap removed. Two signals are used: a honeypot field
   and a sub-3-second submission timer. Both are conservative — a false positive
   here is a lost customer.
-- **A CRM outage returns 502, not success.** The visitor is told to call
-  instead, and the full lead is written to the server log prefixed
-  `[lead] DELIVERY FAILED` so it can be recovered manually.
+- **A CRM outage returns 502, not success.** The visitor is told to call and
+  given a reference to quote. If the email fallback is configured the lead is
+  delivered that way instead and the visitor still sees success.
+- **Customer details are never written to logs.** A delivery failure logs a
+  short reference (e.g. `K3X9F2`, also shown to the visitor) plus
+  non-identifying diagnostics — and nothing else, even when that means the
+  enquiry cannot be recovered. Adapter error messages are scrubbed at the
+  logging boundary so no provider response can smuggle contact details in.
 - **Forms work without JavaScript.** They are real `<form>` elements with a real
   action. Without JS both steps submit at once and the endpoint 303-redirects.
   Leads are the business; they must not depend on a bundle loading.
@@ -124,41 +146,90 @@ visible difference.
 
 ---
 
-## Things the client needs to supply
+## Operational notes before launch
 
-These are gaps in the source material, not oversights. Nothing has been invented
-to fill them:
+- **Configure the email fallback** (`RESEND_API_KEY` + `LEAD_EMAIL_TO`). The most
+  valuable setting after the CRM itself. If the CRM fails and no fallback is
+  configured, the enquiry reaches nobody — the site does not stash it anywhere,
+  by design. The visitor is told to call and given a reference to quote, but
+  many will not. With the fallback configured, the lead is emailed instead and
+  nothing is lost.
+- **Alert on `[lead] ALERT: no delivery path succeeded`.** That line means a real
+  enquiry was lost. Since the payload is deliberately not retained, noticing
+  quickly is the only recovery route.
+- **Restrict who can read production logs, and keep retention short.** Logs carry
+  city, ZIP, a name initial and the last four digits of a phone number. Not
+  enough to identify someone, but treat them as sensitive.
+- **Enable STOP and HELP in the CRM before any messaging goes live.** The site
+  publicly promises both, so the promise has to be true.
 
-1. **Real testimonials.** The legacy testimonials page had *zero* customer
-   reviews — only a generic Forbes industry quote presented as if it were one.
-   `src/data/testimonials.ts` is intentionally empty; add entries and the page
-   switches from the "share your experience" state to a review grid.
-2. **An email address.** None is published anywhere on the legacy site.
-   `CONTACT.email` is `null` and the UI hides every email affordance until it is
-   set.
-3. **Social profiles.** The legacy site's only "social" links were Facebook and
-   Twitter *share* buttons. `CONTACT.social` is empty; the footer renders the
-   block only when it is populated.
-4. **A decision on the Vinita St listing.** `/property/homes-for-sale-in-tx-houston-77034-vinita-3br/`
-   was published in February 2017 and was still rendering as an active "For
-   Sale" listing. It is presented here as an archived past project and set to
-   `noindex`. Flip `archived` to `false` in that page if it is genuinely
-   available.
-5. **A lawyer's read of the privacy policy.** It is carried over verbatim
-   because a privacy policy is a legal document, but it predates current
-   CCPA/GDPR-style expectations.
+## Open items
+
+### Decided
+
+- **Testimonials: none exist, and none are invented.** The legacy page carried
+  zero customer reviews — only a generic Forbes industry quote presented as if
+  it were one. `src/data/testimonials.ts` is intentionally empty. Rather than
+  leave an apologetic gap, `/testimonials/` now leads with *how to vet any cash
+  buyer, including us* — six concrete checks. That is more useful than
+  testimonials and no competitor does it. **Add entries to
+  `src/data/testimonials.ts` and the page automatically switches to a review
+  grid**; the vetting content stays below it.
+- **Social profiles: deliberately none.** A page with four followers and no
+  posts reads as abandoned, which is the exact signal a distressed seller is
+  watching for. `CONTACT.social` is empty and the footer omits the block
+  entirely. Revisit when there is something real to post.
+- **The Vinita St listing is archived.** `/property/homes-for-sale-in-tx-houston-77034-vinita-3br/`
+  was published February 2017 and still rendered as an active "For Sale"
+  listing. It is now presented as a past project and set `noindex`. Flip
+  `archived` to `false` in that page if it is genuinely available.
+
+### Still needed
+
+1. **The CRM endpoint.** See [`docs/crm-integration.md`](docs/crm-integration.md).
+   Nothing reaches Guillermo until this is set.
+2. **An email address on the domain**, e.g. `offers@webuyhouseshouston.com`.
+   Set `CONTACT.email` in `src/config/site.ts` and every email affordance
+   appears automatically. Note `g@fastcashoffers.com` is already public on the
+   property page — a different domain, which reads as a disconnect.
+3. **A Google Business Profile.** The highest-leverage trust and local-SEO asset
+   for this business, and the right place to accumulate reviews — it feeds the
+   Maps pack that sits above organic results, and the `LocalBusiness` schema in
+   `BaseLayout.astro` is already built to support it.
+4. **A lawyer's read of the privacy policy.** Carried over verbatim because a
+   privacy policy is a legal document, but it predates current CCPA/GDPR-style
+   expectations.
 
 ---
 
 ## Deployment
 
-Built for Vercel. Swapping hosts is a one-line change in `astro.config.mjs` —
-replace the `vercel()` adapter with `@astrojs/netlify` or `@astrojs/node`.
-Nothing else in the codebase depends on it.
+**Cloudflare Pages.** The build emits `dist/` with a `_worker.js` and a
+`_routes.json` that sends only `/api/*` to the function — every page is served
+as a static file.
+
+| Setting | Value |
+|---|---|
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Node version | 22.11 or later — set `NODE_VERSION=22.11.0`, or let Pages read `.nvmrc` |
+
+**Environment variables must be set in the Cloudflare Pages dashboard**, not in
+a committed file. This matters more than it sounds: on Cloudflare, secrets are
+*not* visible through `import.meta.env` — they arrive per-request on
+`locals.runtime.env`. `src/pages/api/lead.ts` reads from there first for exactly
+this reason. Get it wrong and every submission fails with "…is not set" while
+the site looks perfectly healthy.
+
+If the host ever changes, swap the adapter in `astro.config.mjs` and re-check
+that env lookup — a Vercel or Node build resolves it differently, and the
+output directory changes too.
 
 Before going live:
 
-- [ ] Set `LEAD_ADAPTER` and its credentials, then submit a real test lead
+- [ ] Set `LEAD_ADAPTER` and the CRM credentials, then submit a real test lead
+- [ ] Set `RESEND_API_KEY` + `LEAD_EMAIL_TO` so a CRM outage cannot lose a lead
+- [ ] Enable STOP and HELP handling in the CRM
 - [ ] Point DNS and confirm `site` in `astro.config.mjs` matches
 - [ ] Submit `/sitemap-index.xml` in Google Search Console
-- [ ] Run `python3 scripts/verify-urls.py` one final time against the production build
+- [ ] Run `npm run verify:urls` against the production build one final time

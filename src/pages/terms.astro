@@ -1,0 +1,117 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import LegalPage from '@/components/LegalPage.astro';
+import { SITE, CONTACT, CONSENT } from '@/config/site';
+import type { LegalSection } from '@/lib/legal';
+
+/**
+ * ⚠️  NEEDS LEGAL REVIEW BEFORE LAUNCH.
+ *
+ * New page — the legacy site had no terms at all.
+ *
+ * Its main job is the "Text messaging" section. Registering an A2P 10DLC
+ * campaign requires a publicly reachable URL carrying the messaging program
+ * disclosures: who sends, what about, how often, that rates may apply, and how
+ * to stop. Campaign registrations are commonly rejected for the absence of
+ * exactly this page, so it is linked from every form and from the footer.
+ *
+ * The messaging disclosures here must stay consistent with the opt-in wording
+ * in `CONSENT` (src/config/site.ts). If one changes, change both, and bump
+ * `CONSENT.version` so existing consent records remain attributable to the
+ * wording that was actually shown.
+ *
+ * The general terms below are deliberately modest — this site sells nothing and
+ * takes no payment, so it does not need commerce terms.
+ */
+
+const LAST_UPDATED = 'July 30, 2026';
+
+const sections: LegalSection[] = [
+  {
+    heading: 'About these terms',
+    paragraphs: [
+      `These terms apply to your use of this website and to any messages you receive from ${SITE.name} after contacting us. By using the site or submitting a form, you agree to them.`,
+    ],
+  },
+  {
+    id: 'messaging',
+    emphasis: true,
+    heading: 'Text messaging',
+    paragraphs: [
+      `If you give us your phone number, ${SITE.name} may send you text messages about the property you contacted us about. If you additionally tick the marketing opt-in on one of our forms, we may send you recurring marketing messages about buying your property.`,
+    ],
+    bullets: [
+      'Program: property inquiry responses and, where you have opted in, offers and follow-ups from We Buy Houses Houston.',
+      'Message frequency varies, and depends on your conversation with us.',
+      'Message and data rates may apply. Your mobile carrier’s standard rates apply to every message sent and received.',
+      'To stop messages, reply STOP to any message from us. You will receive one confirmation, and then no further messages.',
+      'For help, reply HELP or call us on ' + CONTACT.phone + '.',
+      'Carriers are not liable for delayed or undelivered messages.',
+      'Consent to receive marketing messages is never a condition of any purchase, sale or service.',
+    ],
+    paragraphs2: [
+      CONSENT.mobileDataClause,
+      'Supported carriers include AT&T, Verizon Wireless, T-Mobile, Sprint, Boost, U.S. Cellular, MetroPCS, and others. Carrier support may change.',
+    ],
+  },
+  {
+    heading: 'Calls and email',
+    paragraphs: [
+      'Submitting a form means you are asking us to get in touch about your property, so we may call or email you about it. You can tell us to stop at any time and we will — by phone, or by replying to any email.',
+    ],
+  },
+  {
+    heading: 'What this website is and is not',
+    paragraphs: [
+      `${SITE.name} is a real estate investment company. We are not real estate agents, we do not list properties on the MLS, and we do not act as your broker. We buy property directly with our own funds.`,
+      'Nothing on this website is legal, tax, financial or real-estate advice. Articles and guides are general information only, may not reflect current law, and may not fit your circumstances. Please speak to a qualified professional about your own situation before making a decision.',
+      'Any offer we make is subject to inspecting the property and confirming title, and only becomes binding when both parties sign a written purchase agreement. Nothing on this site is an offer to buy.',
+    ],
+  },
+  {
+    heading: 'Accuracy of what you tell us',
+    paragraphs: [
+      'Please give us accurate information about the property. We rely on it to prepare an offer, and an offer based on inaccurate details may change or be withdrawn once we have seen the property.',
+    ],
+  },
+  {
+    heading: 'Availability',
+    paragraphs: [
+      'We try to keep this site available and correct, but we do not guarantee it will be uninterrupted or error-free. We may change or remove content at any time.',
+    ],
+  },
+  {
+    heading: 'Content on this site',
+    paragraphs: [
+      `The text, design and images on this site belong to ${SITE.name} unless stated otherwise. You are welcome to read and share them, but please do not republish them as your own.`,
+    ],
+  },
+  {
+    heading: 'Changes to these terms',
+    paragraphs: [
+      'We may update these terms. The date at the top shows when they last changed, and the current version always applies.',
+    ],
+  },
+  {
+    heading: 'Contact',
+    paragraphs: [
+      `Questions about these terms? Call ${CONTACT.phone}, or write to ${CONTACT.address.street}, ${CONTACT.address.suite}, ${CONTACT.address.city}, ${CONTACT.address.state} ${CONTACT.address.zip}.`,
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Terms & Messaging Terms"
+  description={`Terms of use for ${SITE.name}, including text-message program details, how often we message, and how to opt out by replying STOP.`}
+>
+  <PageHero
+    eyebrow="Legal"
+    title="Terms & Messaging Terms"
+    lead="How this site works, what our offers do and don't commit us to, and the full terms of our text-message program — including how to stop."
+    crumbs={[{ label: 'Terms' }]}
+  />
+
+  <LegalPage sections={sections} lastUpdated={LAST_UPDATED} />
+</BaseLayout>

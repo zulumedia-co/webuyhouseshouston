@@ -1,0 +1,55 @@
+---
+interface Props {
+  items: Array<{ label: string; href?: string }>;
+  tone?: 'light' | 'dark';
+  class?: string;
+}
+const { items, tone = 'light', class: className = '' } = Astro.props;
+const light = tone === 'light';
+
+// `aria-current="page"` is keyed off the item genuinely being last, not off it
+// lacking an href — otherwise a middle item without a link would be announced
+// as the current page.
+const lastIndex = items.length - 1;
+---
+
+<nav aria-label="Breadcrumb" class={className}>
+  <ol class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+    <li>
+      <a
+        href="/"
+        class:list={[
+          'underline-offset-4 transition-colors hover:underline',
+          light ? 'text-white/50 hover:text-white/80' : 'text-ink-subtle hover:text-navy-900',
+        ]}
+      >
+        Home
+      </a>
+    </li>
+    {items.map((item, i) => (
+      <>
+        <li aria-hidden="true" class={light ? 'text-white/25' : 'text-ink-subtle/50'}>/</li>
+        <li>
+          {item.href && i < lastIndex ? (
+            <a
+              href={item.href}
+              class:list={[
+                'underline-offset-4 transition-colors hover:underline',
+                light ? 'text-white/50 hover:text-white/80' : 'text-ink-subtle hover:text-navy-900',
+              ]}
+            >
+              {item.label}
+            </a>
+          ) : (
+            <span
+              class={light ? 'text-white/80' : 'text-navy-900'}
+              aria-current={i === lastIndex ? 'page' : undefined}
+            >
+              {item.label}
+            </span>
+          )}
+        </li>
+      </>
+    ))}
+  </ol>
+</nav>

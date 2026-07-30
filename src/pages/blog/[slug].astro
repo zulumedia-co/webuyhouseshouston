@@ -1,0 +1,165 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import OfferForm from '@/components/OfferForm.astro';
+import PostCard from '@/components/PostCard.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { CONTACT, SITE } from '@/config/site';
+import { formatDate, readingTime, relatedPosts, byNewest, excerpt } from '@/lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post, all: posts },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  all: CollectionEntry<'blog'>[];
+}
+
+const { post, all } = Astro.props;
+const { Content } = await render(post);
+
+const related = relatedPosts(post, all.sort(byNewest));
+const minutes = readingTime(post.body ?? '');
+const description = excerpt(post, 155);
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description,
+  datePublished: post.data.pubDate.toISOString(),
+  author: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': `${SITE.url}/blog/${post.id}/`,
+  },
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE.url}/` },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE.url}/blog/` },
+    { '@type': 'ListItem', position: 3, name: post.data.title },
+  ],
+};
+---
+
+<BaseLayout
+  title={post.data.seoTitle || post.data.title}
+  description={description}
+  ogType="article"
+  schema={[articleSchema, breadcrumbSchema]}
+>
+  <article>
+    <!-- Article header on navy: gives long legacy posts a confident opening
+         even though none of them have a hero image. -->
+    <header class="relative overflow-hidden bg-navy-900 grain">
+      <div
+        class="pointer-events-none absolute -left-32 top-0 h-96 w-96 rounded-full bg-brass-500/[0.07] blur-3xl"
+        aria-hidden="true"
+      ></div>
+
+      <div class="container-page relative pb-14 pt-10 lg:pb-16 lg:pt-12">
+        <Breadcrumbs
+          items={[{ label: 'Blog', href: '/blog/' }, { label: post.data.title }]}
+          class="mb-8"
+        />
+
+        <div class="max-w-3xl">
+          <h1
+            class="text-balance font-display text-[1.875rem] font-semibold leading-[1.15] tracking-tight text-white sm:text-display-md lg:text-display-lg lg:leading-[1.1]"
+          >
+            {post.data.title}
+          </h1>
+
+          <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/50">
+            <time datetime={post.data.pubDate.toISOString()}>
+              {formatDate(post.data.pubDate)}
+            </time>
+            <span aria-hidden="true">·</span>
+            <span>{minutes} min read</span>
+            {post.data.categories.length > 0 && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span class="capitalize">{post.data.categories[0].replace(/-/g, ' ')}</span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="bg-white">
+      <div class="container-page py-14 lg:py-20">
+        <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+          <!-- Article body -->
+          <div class="lg:col-span-7 xl:col-span-8">
+            <div class="prose-editorial max-w-none">
+              <Content />
+            </div>
+
+            <!-- In-article CTA. Someone who read to the bottom of a 1,200-word
+                 article on selling a house with liens is a high-intent reader. -->
+            <aside
+              class="mt-14 overflow-hidden rounded-2xl bg-navy-900 p-7 grain sm:p-9"
+              aria-label="Get a cash offer"
+            >
+              <h2 class="font-display text-2xl font-semibold tracking-tight text-white">
+                Need to sell a house in Houston?
+              </h2>
+              <p class="mt-3 max-w-xl leading-relaxed text-white/65">
+                We'll make you a fair, written, all-cash offer within 24 hours —
+                any condition, any price range, no fees and no obligation.
+              </p>
+              <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                <a href="/get-a-cash-offer-today/" class="btn btn-primary btn-md" data-analytics="article-cta">
+                  Get My Cash Offer
+                  <Icon name="arrow-right" class="h-4 w-4" />
+                </a>
+                <a href={CONTACT.phoneHref} class="btn btn-ghost-light btn-md">
+                  <Icon name="phone" class="h-4 w-4" />
+                  {CONTACT.phone}
+                </a>
+              </div>
+            </aside>
+          </div>
+
+          <!-- Sticky sidebar -->
+          <aside class="lg:col-span-5 xl:col-span-4">
+            <div class="lg:sticky lg:top-28">
+              <OfferForm
+                source={`blog:${post.id}`}
+                heading="Get your cash offer"
+                subheading="No fees, no repairs, no obligation. We'll respond within 24 hours."
+                showTrust={false}
+              />
+
+              {related.length > 0 && (
+                <div class="mt-8 rounded-2xl bg-ivory-100 p-6">
+                  <h2 class="font-display text-lg font-semibold tracking-tight text-navy-900">
+                    Related reading
+                  </h2>
+                  <div class="mt-5 space-y-5">
+                    {related.map((p) => <PostCard post={p} variant="compact" />)}
+                  </div>
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <CtaBand />
+</BaseLayout>

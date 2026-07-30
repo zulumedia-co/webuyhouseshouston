@@ -1,0 +1,210 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Section from '@/components/Section.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import ConsentFields from '@/components/ConsentFields.astro';
+import { CONTACT, CONSENT } from '@/config/site';
+
+const { address } = CONTACT;
+---
+
+<BaseLayout
+  title="Contact Us — We Buy Houses Houston"
+  description="Questions about selling your Houston house? Call 713-730-9000 or send us a note. We love talking with people to see how we can help you reach your goals."
+>
+  <PageHero
+    eyebrow="Contact"
+    title="Have some questions you want to ask us? Excellent."
+    lead="We love talking with people to see how we can help you reach your goals. There is never any pressure, and no obligation."
+    crumbs={[{ label: 'Contact Us' }]}
+  />
+
+  <Section tone="white">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-5">
+        <h2 class="font-display text-display-md font-semibold tracking-tight text-navy-900">
+          The fastest way to reach us
+        </h2>
+        <p class="mt-4 leading-relaxed text-ink-muted">
+          Calling will always get you an answer faster than email. If you send a
+          message instead, we will get back to you within 48 hours.
+        </p>
+
+        <a
+          href={CONTACT.phoneHref}
+          class="mt-8 flex items-center gap-4 rounded-xl bg-navy-900 p-6 transition-colors hover:bg-navy-800"
+          data-analytics="contact-page-call"
+        >
+          <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brass-500/15 text-brass-400">
+            <Icon name="phone" class="h-5 w-5" />
+          </span>
+          <span>
+            <span class="block text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
+              Call us today
+            </span>
+            <span class="mt-1 block font-display text-2xl font-semibold tracking-tight text-white">
+              {CONTACT.phone}
+            </span>
+          </span>
+        </a>
+
+        <div class="mt-6 rounded-xl bg-ivory-100 p-6">
+          <h3 class="text-xs font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+            Office
+          </h3>
+          <address class="mt-3 not-italic leading-relaxed text-ink-muted">
+            <span class="font-medium text-navy-900">We Buy Houses Houston</span><br />
+            {address.street}<br />
+            {address.suite}<br />
+            {address.city}, {address.state} {address.zip}
+          </address>
+        </div>
+
+        {CONTACT.email && (
+          <p class="mt-6 text-ink-muted">
+            Email:
+            <a href={`mailto:${CONTACT.email}`} class="font-semibold text-navy-900 underline decoration-brass-500 underline-offset-4">
+              {CONTACT.email}
+            </a>
+          </p>
+        )}
+      </div>
+
+      <div class="lg:col-span-7">
+        <div class="rounded-2xl bg-white p-6 shadow-card ring-1 ring-navy-900/[0.06] sm:p-8">
+          <h2 class="font-display text-2xl font-semibold tracking-tight text-navy-900">
+            Send us a note
+          </h2>
+          <p class="mt-2 leading-relaxed text-ink-muted">
+            Tell us what is going on and we will come back to you within 48 hours.
+          </p>
+
+          {/* Shown when a no-JavaScript POST failed and the endpoint redirected
+              back here with ?error=1. The page is prerendered, so the query
+              string can only be read in the browser. */}
+          <div class="mt-5 hidden rounded-lg border border-danger/30 bg-danger/5 p-4" data-query-error role="alert">
+            <p class="text-sm font-medium text-navy-900">
+              We could not send your message.
+            </p>
+            <p class="mt-1 text-sm text-ink-muted">
+              Please call us at
+              <a href={CONTACT.phoneHref} class="font-semibold underline underline-offset-2">
+                {CONTACT.phone}
+              </a>
+              and we will take your details over the phone.
+            </p>
+          </div>
+
+          <form method="POST" action="/api/lead/" class="mt-6 space-y-4" data-contact-form>
+            <input type="hidden" name="source" value="contact-us" />
+            <input type="hidden" name="pagePath" value="/contact-us/" />
+            <input type="hidden" name="address" value="General inquiry" />
+            <input type="hidden" name="city" value="Houston" />
+            <div class="absolute left-[-9999px]" aria-hidden="true">
+              <label>
+                Do not fill this in
+                <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+              </label>
+            </div>
+            <input type="hidden" name="renderedAt" data-rendered-at value="" />
+            <input type="hidden" name="consentVersion" value={CONSENT.version} />
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="field-label" for="contact-name">Your name</label>
+                <input id="contact-name" name="name" type="text" required autocomplete="name" class="field" placeholder="Jane Doe" />
+              </div>
+              <div>
+                <label class="field-label" for="contact-phone">Phone</label>
+                <input id="contact-phone" name="phone" type="tel" required autocomplete="tel" class="field" placeholder="(713) 555-0123" />
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label" for="contact-email">
+                Email <span class="font-normal normal-case tracking-normal text-ink-subtle">(optional)</span>
+              </label>
+              <input id="contact-email" name="email" type="email" autocomplete="email" class="field" placeholder="jane@example.com" />
+            </div>
+
+            <div>
+              <label class="field-label" for="contact-message">How can we help?</label>
+              <textarea
+                id="contact-message"
+                name="message"
+                rows="5"
+                class="field resize-y"
+                placeholder="Tell us a bit about your situation or your property…"></textarea>
+            </div>
+
+            <ConsentFields>
+              <button type="submit" class="btn btn-primary btn-lg w-full" data-submit>
+                <span data-submit-label>Send Message</span>
+              </button>
+            </ConsentFields>
+
+            <div class="hidden rounded-lg border border-danger/30 bg-danger/5 p-4 text-sm" data-form-error role="alert">
+              <p class="font-medium text-navy-900">Something went wrong sending your message.</p>
+              <p class="mt-1 text-ink-muted">
+                Please call us at
+                <a href={CONTACT.phoneHref} class="font-semibold underline underline-offset-2">
+                  {CONTACT.phone}
+                </a>.
+              </p>
+            </div>
+
+            <p class="text-sm text-ink-subtle">
+              We respond to every message within 48 hours. Calling is faster.
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <CtaBand
+    title="Ready to see a number?"
+    lead="If you would rather skip straight to it, tell us about the property and we'll come back within 24 hours with a fair all-cash offer."
+  />
+</BaseLayout>
+
+<script>
+  // Surface the ?error=1 fallback state set by a non-JS submission failure.
+  if (new URLSearchParams(window.location.search).get('error') === '1') {
+    document.querySelector('[data-query-error]')?.classList.remove('hidden');
+  }
+
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  if (form) {
+    const stamp = form.querySelector<HTMLInputElement>('[data-rendered-at]');
+    if (stamp) stamp.value = String(Date.now());
+
+    const errorBox = form.querySelector<HTMLElement>('[data-form-error]');
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+    const label = form.querySelector<HTMLElement>('[data-submit-label]')!;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const original = label.textContent;
+      submit.disabled = true;
+      label.textContent = 'Sending…';
+      errorBox?.classList.add('hidden');
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        window.location.href = '/thank-you/';
+      } catch {
+        submit.disabled = false;
+        label.textContent = original;
+        errorBox?.classList.remove('hidden');
+      }
+    });
+  }
+</script>

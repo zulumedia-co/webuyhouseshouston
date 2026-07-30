@@ -1,0 +1,44 @@
+---
+import type { Faq } from '@/data/content';
+
+interface Props {
+  faqs: Faq[];
+  /** The first item opens by default so the pattern is obvious. */
+  openFirst?: boolean;
+}
+const { faqs, openFirst = true } = Astro.props;
+---
+
+<!-- Native <details>: keyboard accessible, works without JavaScript, and
+     indexable by Google for FAQ rich results. -->
+<div class="divide-y divide-hairline overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-navy-900/[0.06]">
+  {faqs.map((faq, i) => (
+    <details class="group" open={openFirst && i === 0} name="faq">
+      <summary
+        class="flex cursor-pointer list-none items-start justify-between gap-6 px-6 py-5 transition-colors hover:bg-ivory-100 sm:px-8 sm:py-6"
+      >
+        <h3 class="font-display text-lg font-semibold tracking-tight text-navy-900 sm:text-xl">
+          {faq.question}
+        </h3>
+        <span
+          class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy-900/5 text-navy-900 transition-transform duration-300 group-open:rotate-45"
+          aria-hidden="true"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+          </svg>
+        </span>
+      </summary>
+      <div class="px-6 pb-6 sm:px-8 sm:pb-8">
+        <p class="max-w-3xl text-pretty leading-relaxed text-ink-muted">{faq.answer}</p>
+      </div>
+    </details>
+  ))}
+</div>
+
+<style>
+  /* Safari still renders the default disclosure triangle without this. */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

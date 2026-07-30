@@ -1,0 +1,110 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import ComparisonTable from '@/components/ComparisonTable.astro';
+import OfferForm from '@/components/OfferForm.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { CONTACT, SITE } from '@/config/site';
+
+const benefits = [
+  {
+    icon: 'clock' as const,
+    title: 'From offer to close in as little as 7 days',
+    body: 'You get rid of the headache of that property fast and avoid paying any more utility, tax, insurance and mortgage payments. If you list and wait 90+ days to close, you have to factor in every cost of holding that property while you wait.',
+  },
+  {
+    icon: 'wrench' as const,
+    title: 'Never fix anything up or clean again',
+    body: 'No cleaning the house again and again for buyer after buyer. We do not care how dirty it is — we have seen worse — or how many repairs it needs. A complete fixer? Great, we love projects. That saves you time and money you keep in your pocket.',
+  },
+  {
+    icon: 'cash' as const,
+    title: 'No pesky closing fees',
+    body: 'Because we are a full-service professional home buyer here in Texas, we make it easy. We pay all of the closing costs. What we offer you is what you get, minus any mortgage payoff or other encumbrances on the property.',
+  },
+];
+---
+
+<BaseLayout
+  title="Compare — Selling To Us vs. Listing With A Houston Agent"
+  description="Compare selling your Houston house to us against listing with a local agent: commissions, closing costs, contingencies, days on market, showings and repairs — side by side."
+>
+  <PageHero
+    eyebrow="Compare your options"
+    title={`Selling to ${SITE.name} vs. listing with a local Texas agent`}
+    lead="Even in a sellers' market, it is smart to look at your options. You may get a higher top-line sales price listing with an agent — but that does not always mean more money in your pocket or less headache."
+    crumbs={[{ label: 'Compare' }]}
+  />
+
+  <Section tone="white">
+    <ComparisonTable />
+  </Section>
+
+  <Section tone="ivory">
+    <SectionHeading
+      eyebrow="Work the numbers"
+      title="See which way actually helps you get where you're going"
+      lead={`We will not be able to offer you full retail value for your house — but we offer other benefits the traditional route simply cannot.`}
+    />
+
+    <div class="mt-12 grid gap-6 lg:grid-cols-3">
+      {benefits.map((benefit) => (
+        <div class="rounded-xl bg-white p-7 ring-1 ring-navy-900/[0.06]">
+          <span class="flex h-11 w-11 items-center justify-center rounded-lg bg-brass-500/10 text-brass-600">
+            <Icon name={benefit.icon} class="h-5 w-5" />
+          </span>
+          <h3 class="mt-5 font-display text-xl font-semibold tracking-tight text-navy-900">
+            {benefit.title}
+          </h3>
+          <p class="mt-3 leading-relaxed text-ink-muted">{benefit.body}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-12 rounded-2xl bg-white p-8 ring-1 ring-navy-900/[0.06] lg:p-10">
+      <p class="max-w-4xl text-lg leading-relaxed text-ink-muted">
+        When you add up the time you could save, the no-hassle experience, and
+        the money you will save on commissions, fees and holding costs while you
+        wait to sell the traditional route — for many area homeowners, selling to
+        a professional house buyer is the best viable option.
+      </p>
+      <p class="mt-4 font-display text-2xl font-semibold tracking-tight text-navy-900">
+        Is it for you?
+      </p>
+      <p class="mt-4 max-w-4xl leading-relaxed text-ink-muted">
+        You have nothing to lose by getting an offer — no obligations, no
+        pressure. But you could lose thousands of dollars, or months of your time,
+        by not finding out.
+      </p>
+    </div>
+  </Section>
+
+  <Section tone="navy">
+    <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-6">
+        <SectionHeading
+          eyebrow="No obligation"
+          title="Get a fair all-cash offer on your house today"
+          tone="light"
+          lead="Fill out the short form, or give us a call and let's chat. Our process is simple and you can close on the date of your choice."
+        />
+        <a
+          href={CONTACT.phoneHref}
+          class="mt-8 inline-flex items-center gap-2.5 font-display text-3xl font-semibold tracking-tight text-white transition-colors hover:text-brass-300"
+        >
+          <Icon name="phone" class="h-6 w-6 text-brass-400" />
+          {CONTACT.phone}
+        </a>
+      </div>
+
+      <div class="lg:col-span-6 xl:col-span-5 xl:col-start-8">
+        <OfferForm tone="dark" source="compare" heading="Request your free offer" />
+      </div>
+    </div>
+  </Section>
+
+  <CtaBand />
+</BaseLayout>

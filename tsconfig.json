@@ -1,0 +1,14 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*.ts", "**/*.tsx", "**/*.astro"],
+  "//": "node_modules must be listed explicitly — specifying `exclude` replaces TypeScript's default ignore list rather than extending it.",
+  "exclude": ["node_modules", "dist", "raw", "raw-pages"],
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}

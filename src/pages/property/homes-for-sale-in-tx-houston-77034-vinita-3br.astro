@@ -1,0 +1,211 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Section from '@/components/Section.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import OfferForm from '@/components/OfferForm.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import Icon from '@/components/Icon.astro';
+import { CONTACT } from '@/config/site';
+
+/**
+ * A single legacy property listing, preserved at its original URL.
+ *
+ * NOTE FOR THE CLIENT: the source listing was published in February 2017 and
+ * was still rendering as an active "For Sale" listing nine years later. Showing
+ * a decade-old $85,000 listing as current damages credibility with exactly the
+ * audience this site is trying to win, so it is presented here as an archived
+ * past project instead. If the property is genuinely still available, flip
+ * `archived` to false and the page reverts to an active listing.
+ */
+const archived = true;
+
+const property = {
+  address: '2110 Vinita St',
+  city: 'Houston',
+  state: 'TX',
+  zip: '77034',
+  price: '$85,000',
+  beds: 3,
+  baths: '1.5',
+  sqft: '2,075',
+  lot: '8,163',
+  built: 1956,
+  type: 'Single family house · 1 story',
+  listed: 'February 2017',
+};
+
+const photos = [
+  { src: '/property/vinita/front.webp', alt: 'Front elevation of 2110 Vinita St' },
+  { src: '/property/vinita/living-room-1.webp', alt: 'Living room' },
+  { src: '/property/vinita/kitchen-1.webp', alt: 'Kitchen' },
+  { src: '/property/vinita/bedroom-1.webp', alt: 'Bedroom' },
+  { src: '/property/vinita/kitchen-2.webp', alt: 'Kitchen, second view' },
+  { src: '/property/vinita/living-room-2.webp', alt: 'Living room, second view' },
+  { src: '/property/vinita/bedroom-2.webp', alt: 'Second bedroom' },
+  { src: '/property/vinita/back.webp', alt: 'Rear of the property' },
+  { src: '/property/vinita/side.webp', alt: 'Side of the property' },
+];
+
+const specs = [
+  { label: 'Bedrooms', value: String(property.beds) },
+  { label: 'Bathrooms', value: property.baths },
+  { label: 'Square feet', value: property.sqft },
+  { label: 'Lot size', value: `${property.lot} sq ft` },
+  { label: 'Year built', value: String(property.built) },
+  { label: 'Property type', value: property.type },
+];
+---
+
+<BaseLayout
+  title={`${property.address}, ${property.city} ${property.zip} — 3BR Investment Property`}
+  description={`A 3-bedroom, 1.5-bath single family house in the ${property.zip} area of southeast Houston. An example of the kind of property We Buy Houses Houston works with.`}
+  noindex={archived}
+>
+  <section class="relative overflow-hidden bg-navy-900 grain">
+    <div
+      class="pointer-events-none absolute -left-32 -top-24 h-[28rem] w-[28rem] rounded-full bg-brass-500/[0.07] blur-3xl"
+      aria-hidden="true"
+    ></div>
+
+    <div class="container-page relative pb-14 pt-10 lg:pb-16 lg:pt-12">
+      <Breadcrumbs
+        items={[{ label: 'Properties' }, { label: property.address }]}
+        class="mb-8"
+      />
+
+      <div class="flex flex-wrap items-end justify-between gap-8">
+        <div class="max-w-2xl">
+          <div class="flex flex-wrap items-center gap-3">
+            {archived && (
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-white/70">
+                Archived listing
+              </span>
+            )}
+            <span class="text-sm text-white/50">Listed {property.listed}</span>
+          </div>
+
+          <h1 class="mt-5 text-balance font-display text-[1.875rem] font-semibold leading-[1.15] tracking-tight text-white sm:text-display-md lg:text-display-lg">
+            {property.address}
+          </h1>
+          <p class="mt-3 text-lg text-white/60">
+            {property.city}, {property.state} {property.zip}
+          </p>
+        </div>
+
+        <div class="text-left sm:text-right">
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-brass-400">
+            Asking price at the time
+          </p>
+          <p class="mt-1 font-display text-display-md font-semibold tracking-tight text-white">
+            {property.price}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {archived && (
+    <div class="border-b border-hairline bg-brass-50">
+      <div class="container-page py-5">
+        <p class="flex items-start gap-3 text-[0.9375rem] leading-relaxed text-navy-800">
+          <Icon name="clock" class="mt-0.5 h-5 w-5 shrink-0 text-brass-600" />
+          <span>
+            <strong class="font-semibold">This listing is no longer available.</strong>
+            It's kept here as an example of the kind of property we work with. If
+            you have a house like this one — or in any condition at all — we'd be
+            glad to make you a cash offer.
+            <a href="/get-a-cash-offer-today/" class="font-semibold underline decoration-brass-500 underline-offset-4">
+              Get your offer →
+            </a>
+          </span>
+        </p>
+      </div>
+    </div>
+  )}
+
+  <Section tone="white">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7 xl:col-span-8">
+        <div class="grid gap-3 sm:grid-cols-2">
+          {photos.map((photo, i) => (
+            <img
+              src={photo.src}
+              alt={photo.alt}
+              loading={i < 2 ? 'eager' : 'lazy'}
+              decoding="async"
+              class:list={[
+                'w-full rounded-xl object-cover ring-1 ring-navy-900/[0.06]',
+                i === 0 ? 'sm:col-span-2 h-72 sm:h-96' : 'h-56',
+              ]}
+            />
+          ))}
+        </div>
+
+        <dl class="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-hairline sm:grid-cols-3">
+          {specs.map((spec) => (
+            <div class="bg-white p-5">
+              <dt class="text-xs font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+                {spec.label}
+              </dt>
+              <dd class="mt-1.5 font-display text-lg font-semibold tracking-tight text-navy-900">
+                {spec.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div class="prose-editorial mt-10 max-w-none">
+          <h2>About this property</h2>
+          <p>
+            A 3-bedroom, 1.5-bathroom, single-story house in the southeast area
+            of Houston, in the {property.zip} zip code. Built in {property.built}{' '}
+            and sitting on a {property.lot} square foot lot, it was offered as a
+            fixer-upper investment opportunity.
+          </p>
+          <p>
+            The location is close to parks and recreation, with at least 30
+            restaurants, a couple of grocers, and shopping areas within a mile.
+          </p>
+
+          <h2>Why we're showing you this</h2>
+          <p>
+            This is the kind of house that does not do well on the traditional
+            market. It needed work, it was priced for an investor rather than a
+            retail buyer, and a conventional lender would have been difficult on
+            it. Those are exactly the conditions where a direct cash sale makes
+            more sense than a listing.
+          </p>
+          <p>
+            If you own something similar — a rental you're tired of, an inherited
+            property, or a house that needs more work than you want to fund —
+            we'll look at it and make you a fair offer.
+          </p>
+        </div>
+      </div>
+
+      <aside class="lg:col-span-5 xl:col-span-4">
+        <div class="lg:sticky lg:top-28">
+          <OfferForm
+            source="property:vinita-3br"
+            heading="Have a house like this?"
+            subheading="Any condition, any price range. We'll come back to you within 24 hours."
+          />
+
+          <div class="mt-6 rounded-xl bg-ivory-100 p-6">
+            <p class="text-sm text-ink-subtle">Questions about a property?</p>
+            <a
+              href={CONTACT.phoneHref}
+              class="mt-1.5 inline-flex items-center gap-2 font-display text-2xl font-semibold tracking-tight text-navy-900 transition-colors hover:text-brass-600"
+            >
+              <Icon name="phone" class="h-5 w-5 text-brass-500" />
+              {CONTACT.phone}
+            </a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </Section>
+
+  <CtaBand />
+</BaseLayout>

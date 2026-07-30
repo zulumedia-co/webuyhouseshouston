@@ -1,0 +1,62 @@
+---
+import type { LegalSection } from '@/lib/legal';
+
+/**
+ * Shared body for the privacy and terms pages.
+ *
+ * Both pages had an identical section type, an identical render loop and an
+ * identical closing disclaimer. Keeping one copy means a change to how legal
+ * copy is presented — or to the disclaimer itself — cannot land on one page and
+ * silently miss the other.
+ *
+ * Sections flagged `emphasis` render as a brass callout; see `.prose-callout`
+ * in global.css, which also restores the sibling spacing that wrapping the
+ * block would otherwise interrupt.
+ */
+interface Props {
+  sections: LegalSection[];
+  lastUpdated: string;
+}
+
+const { sections, lastUpdated } = Astro.props;
+---
+
+<div class="bg-white py-14 lg:py-20">
+  <div class="container-prose">
+    <p class="text-sm text-ink-subtle">Last updated: {lastUpdated}</p>
+
+    <div class="prose-editorial mt-8">
+      {sections.map((section) =>
+        section.emphasis ? (
+          <div class="prose-callout">
+            <h2 id={section.id}>{section.heading}</h2>
+            {section.paragraphs?.map((p) => <p>{p}</p>)}
+            {section.bullets && (
+              <ul>
+                {section.bullets.map((b) => <li>{b}</li>)}
+              </ul>
+            )}
+            {section.paragraphs2?.map((p) => <p>{p}</p>)}
+          </div>
+        ) : (
+          <>
+            <h2 id={section.id}>{section.heading}</h2>
+            {section.paragraphs?.map((p) => <p>{p}</p>)}
+            {section.bullets && (
+              <ul>
+                {section.bullets.map((b) => <li>{b}</li>)}
+              </ul>
+            )}
+            {section.paragraphs2?.map((p) => <p>{p}</p>)}
+          </>
+        ),
+      )}
+    </div>
+
+    <p class="mt-12 border-t border-hairline pt-6 text-sm leading-relaxed text-ink-subtle">
+      Nothing on this page is legal advice. If you are dealing with a
+      foreclosure, probate or divorce, please speak to a qualified attorney
+      about your own situation.
+    </p>
+  </div>
+</div>

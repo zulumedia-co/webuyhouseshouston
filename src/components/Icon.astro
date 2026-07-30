@@ -1,0 +1,53 @@
+---
+/** Inline stroke icons. Inlined rather than sprited — there are few enough
+ *  that a sprite request would cost more than it saves. */
+import type { IconName } from '@/lib/icons';
+
+interface Props {
+  name: IconName;
+  class?: string;
+}
+
+const { name, class: className = 'h-6 w-6' } = Astro.props;
+
+/**
+ * `satisfies Record<IconName, string>` ties this map to the union above, so
+ * adding a name without its path data is a build error rather than an
+ * invisible icon on the live site. Typing it as `Record<string, string>`
+ * compiled happily and resolved to `undefined` at runtime.
+ */
+const paths = {
+  gavel: 'M14 13l-7.5 7.5a2.12 2.12 0 0 1-3-3L11 10m3 3 3.5-3.5m-3.5 3.5-3-3m3.5-.5L17.5 6m-3.5 3.5-3-3M17.5 6 21 9.5M17.5 6 14 2.5M4 21h7',
+  key: 'M15.5 7.5a4.5 4.5 0 1 1-3.4 7.44L10 17h-2v2H6v2H2v-4l6.06-6.06A4.5 4.5 0 1 1 15.5 7.5Zm1.5 1.5h.01',
+  heart: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z',
+  box: 'm21 8-9-5-9 5m18 0v8l-9 5-9-5V8m18 0-9 5m0 0L3 8m9 5v9',
+  wrench: 'M14.7 6.3a4 4 0 0 0 5 5l-9.4 9.4a2.83 2.83 0 0 1-4-4l9.4-9.4a4 4 0 0 0-1 3Z M14.7 6.3 17.5 3.5a4 4 0 0 1 3 6.8',
+  clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-16v6l4 2',
+  file: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 0v6h6M9 13h6M9 17h6',
+  home: 'm3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V10Zm6 12v-8h6v8',
+  check: 'm5 13 4 4L19 7',
+  phone: 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z',
+  'arrow-right': 'M5 12h14m-6-6 6 6-6 6',
+  shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Zm-3-10 2 2 4-4',
+  cash: 'M2 7h20v10H2V7Zm10 5a2.5 2.5 0 1 0 0-.01M6 10v.01M18 14v.01',
+  calendar: 'M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z',
+  x: 'm6 6 12 12M18 6 6 18',
+} satisfies Record<IconName, string>;
+---
+
+<svg
+  class={className}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.6"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  {/* A single <path> is enough — every `M` command already starts an
+      independent subpath, and stroke caps/joins apply per subpath either way.
+      Splitting on " M" relied on incidental whitespace in hand-authored path
+      strings for no visual difference. */}
+  <path d={paths[name]} />
+</svg>
