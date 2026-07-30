@@ -21,7 +21,7 @@ import type { LegalSection } from '@/lib/legal';
  *   - the SMS/mobile data clause required for A2P 10DLC registration
  *
  * What is a RECOMMENDED DEFAULT and must be confirmed by the business:
- *   - retention periods (24 months for enquiries, 7 years post-transaction)
+ *   - retention periods (24 months for inquiries, 7 years post-transaction)
  *   - the 45-day response window for rights requests
  *   - who internally can access lead data
  *
@@ -86,7 +86,7 @@ const sections: LegalSection[] = [
   {
     heading: 'Information collected automatically',
     paragraphs: [
-      'Alongside your form submission we record which page the form was on, which link or campaign brought you there, the date and time, and your browser’s user-agent string. We use this to know which pages generate genuine enquiries and to investigate submission problems.',
+      'Alongside your form submission we record which page the form was on, which link or campaign brought you there, the date and time, and your browser’s user-agent string. We use this to know which pages generate genuine inquiries and to investigate submission problems.',
       'Our hosting provider keeps standard server logs, which may include IP addresses, as a normal part of running and securing the site.',
     ],
   },
@@ -106,7 +106,7 @@ const sections: LegalSection[] = [
       'To contact you about that offer and answer your questions',
       'To carry out a purchase if you accept, including working with a title company',
       'To keep records required for tax, accounting and legal purposes',
-      'To understand which parts of this website produce genuine enquiries',
+      'To understand which parts of this website produce genuine inquiries',
     ],
     paragraphs: [
       'We do not sell your personal information, and we do not share it with third parties for their own marketing.',
@@ -118,8 +118,8 @@ const sections: LegalSection[] = [
       'We share your information only with parties that help us operate, and only to the extent they need it:',
     ],
     bullets: [
-      'Our customer relationship management provider, which stores enquiries on our behalf so we can respond to them',
-      'Our email delivery provider, used to notify us that an enquiry has arrived',
+      'Our customer relationship management provider, which stores inquiries on our behalf so we can respond to them',
+      'Our email delivery provider, used to notify us that an inquiry has arrived',
       'Our website hosting provider',
       'A title company, and where relevant an attorney or escrow agent, if you decide to sell to us',
       'Law enforcement or regulators where we are legally required to disclose',
@@ -131,9 +131,9 @@ const sections: LegalSection[] = [
   {
     heading: 'How long we keep it',
     paragraphs: [
-      'If you enquire and we do not end up doing business together, we keep your enquiry for 24 months so that we can recognise you if you come back to us, and then delete it.',
+      'If you inquire and we do not end up doing business together, we keep your inquiry for 24 months so that we can recognize you if you come back to us, and then delete it.',
       'If we purchase your property, we keep records of the transaction for 7 years, which reflects normal tax and real-estate record-keeping periods.',
-      'If you ask us to delete your information sooner, we will — see below.',
+      'If you ask us to delete your information sooner, we will do so — except where we are required to keep a record for legal, tax or accounting reasons. In practice that means we can delete an inquiry at any time, but where we have actually purchased your property we must keep the transaction records for the periods above.',
     ],
   },
   {
@@ -144,12 +144,12 @@ const sections: LegalSection[] = [
     bullets: [
       'Tell you what information we hold about you',
       'Correct anything that is wrong',
-      'Delete your information',
+      'Delete your information, subject to records we must keep by law',
       'Stop contacting you, by any or all channels',
       'Provide a copy of what you gave us',
     ],
     paragraphs2: [
-      `To make any of these requests, ${contactRoute}. We will delete your information when you ask us to. We aim to deal with requests promptly and will respond within 45 days at the latest. We will not treat you differently for exercising any of these rights.`,
+      `To make any of these requests, ${contactRoute}. We will delete your information when you ask us to, other than records we are legally required to retain — see “How long we keep it” above. We aim to deal with requests promptly and will respond within 45 days at the latest. We will not treat you differently for exercising any of these rights.`,
       'To stop text messages immediately, reply STOP to any message. To stop emails, use the unsubscribe link or simply tell us.',
     ],
   },
@@ -157,18 +157,18 @@ const sections: LegalSection[] = [
     heading: 'Cookies and tracking',
     paragraphs: [
       ANALYTICS_ENABLED
-        ? 'We use Google Analytics to understand how people find and use this website — which pages are read, and which ones lead to an enquiry. Google Analytics sets cookies and receives your IP address. We use it for statistics about the site, not to identify you personally.'
-        : 'This website does not currently run analytics cookies or trackers. We expect to add website analytics in future to understand which pages are useful; when we do, we will update this section before it goes live.',
+        ? 'We use Google Analytics to understand how people find and use this website — which pages are read, and which ones lead to an inquiry. Google Analytics sets cookies and receives your IP address. We use it for statistics about the site, not to identify you personally.'
+        : 'This website does not currently run analytics cookies or trackers. We expect to add website analytics in the future to understand which pages are useful; when we do, we will update this section before it goes live.',
       ADVERTISING_ENABLED
-        ? 'We also run advertising that uses cookies to show our ads to people who have visited this site before. You can opt out of personalised advertising through your browser settings or through the advertising provider’s own controls.'
-        : 'We do not currently run advertising cookies or remarketing pixels, and we do not follow you across other websites. We may advertise in future. If we do, we will say so here, describe what is used, and explain how to opt out — before anything is switched on.',
+        ? 'We also run advertising that uses cookies to show our ads to people who have visited this site before. You can opt out of personalized advertising through your browser settings or through the advertising provider’s own controls.'
+        : 'We do not currently run advertising cookies or remarketing pixels, and we do not follow you across other websites. We may advertise in the future. If we do, we will say so here, describe what is used, and explain how to opt out — before anything is switched on.',
       'Whatever we use, we will not sell your personal information, and mobile opt-in data is never shared for marketing, as described above.',
     ],
   },
   {
     heading: 'How we protect your information',
     paragraphs: [
-      'This site is served over an encrypted connection, and form submissions are transmitted encrypted. Access to enquiry records is limited to the people who need it in order to respond to you and to complete a purchase.',
+      'This site is served over an encrypted connection, and form submissions are transmitted encrypted. Access to inquiry records is limited to the people who need it in order to respond to you and to complete a purchase.',
       'No method of transmission or storage is completely secure, and we cannot guarantee absolute security.',
     ],
   },

@@ -11,17 +11,17 @@ const pages = pageWindow(current, total);
 
 // Only emit an href when the target page actually exists. Static pages are
 // generated for 1..total, so `blogPagePath(total + 1)` would point at a page
-// that 404s. Greying the control out is not enough: `pointer-events-none` only
+// that 404s. Graying the control out is not enough: `pointer-events-none` only
 // stops mouse clicks, while search engines read the href regardless — so the
 // live site was advertising /blog/page/27/ to Google on the last page.
 // An <a> without an href is not a link, so there is nothing left to follow.
 // When there is no page to move to, the control renders as an invisible <span>
 // placeholder rather than an <a> with no href.
 //
-// Two reasons it is invisible rather than greyed out: an anchor without an href
-// has no link role, so `aria-disabled` on it is invalid ARIA; and a greyed-out
+// Two reasons it is invisible rather than grayed out: an anchor without an href
+// has no link role, so `aria-disabled` on it is invalid ARIA; and a grayed-out
 // label light enough to read as "disabled" cannot also meet the 4.5:1 contrast
-// minimum. Holding the space keeps the page numbers centred, while `invisible`
+// minimum. Holding the space keeps the page numbers centered, while `invisible`
 // and `aria-hidden` mean it is neither seen nor announced.
 const hasPrev = current > 1;
 const hasNext = current < total;

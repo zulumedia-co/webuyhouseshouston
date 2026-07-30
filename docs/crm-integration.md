@@ -183,6 +183,21 @@ That is the recommended setup even with the CRM working.
 
 ## 5. Testing it
 
+**Diagnosing a rejected field.** The site never logs the CRM's response body —
+those responses quote submitted values back, so they are treated as customer
+data. If a field mapping is wrong, POST to the CRM endpoint directly and read
+its reply there:
+
+```bash
+curl -i -X POST "$FLOWTRACK_WEBHOOK_URL" \
+  -H "Content-Type: application/json" \
+  -d '{"first_name":"Test","last_name":"Lead","phone":"7135550123","property_address":"1 Test St","property_city":"Houston","property_state":"TX"}'
+```
+
+Use obviously fake details. That shows you exactly which field the CRM is
+unhappy with, without any real person's information passing through our logs.
+
+
 Once the variables are set, submit a real lead through the site and confirm it
 lands. You can also hit the endpoint directly:
 

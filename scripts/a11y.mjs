@@ -7,7 +7,7 @@ import { ROUTE_PATHS } from './routes.mjs';
 const require = createRequire(import.meta.url);
 const axeSource = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
-const BASE = process.env.BASE || 'http://localhost:4322';
+const BASE = process.env.BASE || 'http://localhost:4321';
 const pages = ROUTE_PATHS;
 
 const browser = await chromium.launch();

@@ -5,7 +5,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert';
 
-const BASE = process.env.BASE || 'http://localhost:4322';
+const BASE = process.env.BASE || 'http://localhost:4321';
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 

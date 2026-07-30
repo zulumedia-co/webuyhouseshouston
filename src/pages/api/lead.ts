@@ -160,15 +160,25 @@ export const POST: APIRoute = async ({ request }) => {
       lead: redactLead(lead),
     });
 
-    // Last resort only. Every delivery route has failed, so this log line is
-    // the sole surviving copy of the lead — at that point losing the customer
-    // outright is the greater harm. Configure the Resend fallback
-    // (RESEND_API_KEY + LEAD_EMAIL_TO) and this branch stops being reachable.
-    if (outcome.needsLogRecovery) {
+    // No delivery path accepted the lead. Deliberately NOT logging the payload
+    // here, even though it is the only remaining copy.
+    //
+    // An earlier version did, reasoning that losing a lead outright was worse
+    // than a log entry. That reasoning does not survive contact with the
+    // privacy policy this site publishes: it discloses the CRM, the email
+    // provider and the host, and says nothing about writing contact details
+    // into server logs. Recovering a lead from a log also only works if someone
+    // is watching the logs, whereas the exposure lasts as long as retention
+    // does. The visitor is told to call and given `ref` to quote, and the
+    // redacted line above records that the enquiry happened.
+    //
+    // Configure the Resend fallback (RESEND_API_KEY + LEAD_EMAIL_TO) so this
+    // branch stops being reachable at all — that is the real fix.
+    if (outcome.allRoutesFailed) {
       console.error(
-        `[lead] ${ref} NO DELIVERY PATH SUCCEEDED — full payload logged for manual recovery. ` +
-          'Configure a fallback so customer details stop being written here:',
-        JSON.stringify(lead),
+        `[lead] ${ref} ALERT: no delivery path succeeded — this enquiry reached nobody. ` +
+          'Contact the visitor using the reference above if they call. ' +
+          'Configure RESEND_API_KEY + LEAD_EMAIL_TO to prevent this.',
       );
     }
 

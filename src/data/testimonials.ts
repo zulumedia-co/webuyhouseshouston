@@ -24,7 +24,7 @@ export interface Testimonial {
 export const TESTIMONIALS: Testimonial[] = [];
 
 /**
- * Industry context, NOT a customer review. Attributed to Forbes and labelled
+ * Industry context, NOT a customer review. Attributed to Forbes and labeled
  * as such so no reader mistakes it for social proof from a seller.
  */
 export const INDUSTRY_QUOTE = {

@@ -226,7 +226,7 @@ export const RESOURCES: Resource[] = [
   },
   {
     title: 'HUD-Approved Housing Counseling',
-    body: 'Free, government-approved counselling for homeowners facing foreclosure. A HUD counsellor can review your situation with you at no cost and is not trying to buy your house.',
+    body: 'Free, government-approved counseling for homeowners facing foreclosure. A HUD counselor can review your situation with you at no cost and is not trying to buy your house.',
     href: 'https://www.hud.gov/i_want_to/talk_to_a_housing_counselor',
     external: true,
   },

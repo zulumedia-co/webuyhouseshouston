@@ -132,7 +132,7 @@ await checkAsync('a failing CRM with a working fallback delivers, and logs nothi
     });
 
     assert.equal(outcome.delivered, true, 'fallback did not rescue the lead');
-    assert.equal(outcome.needsLogRecovery, false, 'should not need log recovery when delivered');
+    assert.equal(outcome.allRoutesFailed, false, 'should not report total failure when delivered');
     assert.ok(String(outcome.via).includes('resend'), 'wrong route reported');
 
     const all = logs.join('\n');
@@ -175,6 +175,28 @@ await checkAsync('a CRM validation error cannot echo customer data into logs', a
     }
     assert.ok(raw.includes('422'), 'status code should survive — it is the useful part');
 
+    // Names and street addresses specifically. The scrubber cannot recognise
+    // these by shape, which is why the adapter must never emit the body at all
+    // — this asserts the adapter, not the scrubber.
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({
+          error: 'Rejected',
+          name: 'Aurelia Featherstonehaugh',
+          street: '4821 Sensitive Street',
+          note: 'My mother passed and the house is in probate.',
+        }),
+        { status: 400 },
+      );
+    const second = await deliverLeadWithFallback(lead, {
+      LEAD_ADAPTER: 'flowtrack',
+      FLOWTRACK_WEBHOOK_URL: 'https://crm.example.com/hook',
+    });
+    const rawSecond = JSON.stringify(second.attempts);
+    for (const secret of ['Aurelia', 'Featherstonehaugh', 'Sensitive Street', 'My mother passed']) {
+      assert.ok(!rawSecond.includes(secret), `adapter leaked "${secret}" from the response body`);
+    }
+
     // And the logging boundary scrubs anything an adapter might still emit.
     const scrubbed = redactErrorText(
       'CRM rejected: phone (713) 555-8842 for aurelia.private@example.com',
@@ -200,9 +222,9 @@ await checkAsync('with no fallback configured, the lead is reported unrecoverabl
 
     assert.equal(outcome.delivered, false);
     assert.equal(
-      outcome.needsLogRecovery,
+      outcome.allRoutesFailed,
       true,
-      'must flag that the log is the only surviving copy',
+      'must flag that no delivery route succeeded',
     );
     assert.equal(outcome.attempts.length, 1, 'should not have attempted an unconfigured fallback');
   } finally {

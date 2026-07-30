@@ -28,9 +28,14 @@ npm run test:leads    # PII stays out of logs; consent is never assumed
 npm run shots         # screenshot every page, desktop + mobile
 ```
 
-`test:form` and `test:a11y` need a server running. `test:form` needs the dev
-server (`npm run dev`, port 4322) because it exercises the lead API;
-`test:a11y` and `shots` can point at any server via `BASE=`.
+All of these expect a server on **port 4321**, which is what `npm run dev`
+starts. `test:form` specifically needs the dev server, because it exercises the
+lead API; the others are happy against a static preview too. Point any of them
+elsewhere with `BASE=http://localhost:1234 npm run test:a11y`.
+
+The dev server takes ~35s to answer its first request while Vite compiles the
+335 posts. `test:form` warms its routes first, so this shows up as a slow start
+rather than a failure.
 
 Current state: 352/352 URLs resolve, 12/12 form checks and 7/7 lead checks pass,
 zero WCAG 2.1 A/AA violations across 21 pages.
@@ -88,7 +93,9 @@ CRM adapter chosen by the `LEAD_ADAPTER` environment variable.
 
 **Production target is `flowtrack`** — app.zulumedia.co, a FlowTrack/CloseGPT
 white-label. The adapter is written. **See [`docs/crm-integration.md`](docs/crm-integration.md)
-for the exact form fields to create in the CRM and what to send back.**
+for the exact form fields to create in the CRM and what to send back**, and
+[`.env.example`](.env.example) for every environment variable involved —
+adapter selection, CRM credentials, and the email fallback.
 
 **This is unconfigured until you set `LEAD_ADAPTER`.** Out of the box it uses
 the `console` adapter, which logs the lead and does nothing else. The site will
@@ -103,10 +110,11 @@ Deliberate behaviours worth knowing:
 - **A CRM outage returns 502, not success.** The visitor is told to call and
   given a reference to quote. If the email fallback is configured the lead is
   delivered that way instead and the visitor still sees success.
-- **Customer details are kept out of logs.** A delivery failure logs a short
-  reference (e.g. `K3X9F2`, also shown to the visitor) plus non-identifying
-  diagnostics. Adapter error messages are scrubbed at the logging boundary, so
-  no provider response can smuggle a phone number or email into a log line.
+- **Customer details are never written to logs.** A delivery failure logs a
+  short reference (e.g. `K3X9F2`, also shown to the visitor) plus
+  non-identifying diagnostics — and nothing else, even when that means the
+  enquiry cannot be recovered. Adapter error messages are scrubbed at the
+  logging boundary so no provider response can smuggle contact details in.
 - **Forms work without JavaScript.** They are real `<form>` elements with a real
   action. Without JS both steps submit at once and the endpoint 303-redirects.
   Leads are the business; they must not depend on a bundle loading.
@@ -135,18 +143,17 @@ visible difference.
 ## Operational notes before launch
 
 - **Configure the email fallback** (`RESEND_API_KEY` + `LEAD_EMAIL_TO`). The most
-  valuable setting after the CRM itself. Without it, a CRM outage is the only
-  remaining path where the full lead is written to the log — because at that
-  point the log is the sole surviving copy. With it configured, that branch is
-  unreachable and the lead is emailed instead.
-- **Restrict who can read production logs, and keep retention short.** Even with
-  the above, logs carry city, ZIP, a name initial and the last four digits of a
-  phone number. Treat them as sensitive.
-- **Consider an alert on `[lead] DELIVERY FAILED`.** It means a real enquiry did
-  not reach anyone — worth knowing within minutes, not at the end of the week.
-- **Leave `LEAD_DEBUG_CRM_ERRORS` unset.** It exists to diagnose field-mapping
-  problems and deliberately logs the CRM's raw response, which can contain
-  customer data. On temporarily, off again afterwards.
+  valuable setting after the CRM itself. If the CRM fails and no fallback is
+  configured, the enquiry reaches nobody — the site does not stash it anywhere,
+  by design. The visitor is told to call and given a reference to quote, but
+  many will not. With the fallback configured, the lead is emailed instead and
+  nothing is lost.
+- **Alert on `[lead] ALERT: no delivery path succeeded`.** That line means a real
+  enquiry was lost. Since the payload is deliberately not retained, noticing
+  quickly is the only recovery route.
+- **Restrict who can read production logs, and keep retention short.** Logs carry
+  city, ZIP, a name initial and the last four digits of a phone number. Not
+  enough to identify someone, but treat them as sensitive.
 - **Enable STOP and HELP in the CRM before any messaging goes live.** The site
   publicly promises both, so the promise has to be true.
 

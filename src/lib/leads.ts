@@ -104,10 +104,15 @@ export interface DeliveryOutcome {
   via: string | null;
   attempts: Array<{ adapter: string; error: string }>;
   /**
-   * True when no delivery path accepted the lead, so the server log is the
-   * only place it can still be recovered from.
+   * True when no delivery path accepted the lead.
+   *
+   * Named for what it is, not for what we do about it: an earlier version
+   * called this `needsLogRecovery` and the endpoint responded by writing the
+   * full lead to the log. It no longer does — see the comment in
+   * `pages/api/lead.ts`. This now signals "alert someone", not "dump the
+   * payload".
    */
-  needsLogRecovery: boolean;
+  allRoutesFailed: boolean;
 }
 
 /**
@@ -128,7 +133,7 @@ export async function deliverLeadWithFallback(lead: Lead, env: Env): Promise<Del
 
   try {
     await deliverLead(lead, env);
-    return { delivered: true, via: primary, attempts, needsLogRecovery: false };
+    return { delivered: true, via: primary, attempts, allRoutesFailed: false };
   } catch (err) {
     attempts.push({ adapter: primary, error: err instanceof Error ? err.message : String(err) });
   }
@@ -137,13 +142,13 @@ export async function deliverLeadWithFallback(lead: Lead, env: Env): Promise<Del
   if (canEmail && primary !== 'resend') {
     try {
       await resendAdapter(lead, env);
-      return { delivered: true, via: 'resend (fallback)', attempts, needsLogRecovery: false };
+      return { delivered: true, via: 'resend (fallback)', attempts, allRoutesFailed: false };
     } catch (err) {
       attempts.push({ adapter: 'resend (fallback)', error: err instanceof Error ? err.message : String(err) });
     }
   }
 
-  return { delivered: false, via: null, attempts, needsLogRecovery: true };
+  return { delivered: false, via: null, attempts, allRoutesFailed: true };
 }
 
 const digits = (s: string) => s.replace(/\D/g, '');
@@ -374,24 +379,20 @@ const flowTrackAdapter: Adapter = async (lead, env) => {
   const res = await crmFetch(url, { method: 'POST', headers, body: JSON.stringify(payload) }, 'FlowTrack');
 
   if (!res.ok) {
-    // The status alone, deliberately.
+    // The status alone. The response body never leaves this function.
     //
-    // This error message is captured into `attempts` and logged. A CRM
-    // validation rejection routinely echoes the submitted value back — e.g.
-    // `{"error":"Invalid phone","value":"(713) 555-8842"}` — so including the
-    // response body here would put customer contact details straight back into
-    // the logs that redactLead exists to keep them out of. It did, until this
-    // was fixed; see the regression test in scripts/test-lead-logging.mjs.
+    // CRM validation rejections quote the submitted value back — a phone
+    // number, an email, a name, a street address — and this error is captured
+    // into `attempts`, which is logged. There was briefly a debug switch that
+    // let the raw body through; it was removed because the scrubber at the
+    // logging boundary can recognise emails and phone numbers by shape but
+    // cannot recognise that "Aurelia Featherstonehaugh" is a person. A switch
+    // that writes customer data is one somebody eventually leaves on.
     //
-    // When a field-mapping problem genuinely needs the body, set
-    // LEAD_DEBUG_CRM_ERRORS=true temporarily, then turn it back off.
-    if (env.LEAD_DEBUG_CRM_ERRORS === 'true') {
-      const body = await res.text().catch(() => '');
-      throw new Error(
-        `FlowTrack responded ${res.status}: ${body.slice(0, 300)} ` +
-          '[LEAD_DEBUG_CRM_ERRORS is on — this may contain customer data]',
-      );
-    }
+    // To diagnose a field-mapping problem during setup, POST to the CRM
+    // directly with curl and read its response there — see
+    // docs/crm-integration.md. That gives the same information without it
+    // passing through our logs at all.
     throw new Error(`FlowTrack responded ${res.status}`);
   }
 };
