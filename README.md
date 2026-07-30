@@ -14,6 +14,12 @@ npm run dev      # http://localhost:4321
 npm run build    # static build + one serverless function for leads
 ```
 
+**Node 22.11 or later** — `.nvmrc` pins it, and `engines.node` enforces it on
+install. `npm run test:leads` imports TypeScript directly via
+`--experimental-strip-types`, which does not exist before Node 22.6, so on an
+older runtime it fails with an unrecognised-flag error rather than anything
+that points at the cause.
+
 **Performance:** the homepage is 26.3 KB gzipped on first load (15.3 KB HTML +
 11 KB CSS) and ships 3.3 KB of inline JavaScript — no framework runtime, no
 external requests. A blog post is 9.9 KB gzipped.
@@ -206,7 +212,7 @@ as a static file.
 |---|---|
 | Build command | `npm run build` |
 | Output directory | `dist` |
-| Node version | 20 or later |
+| Node version | 22.11 or later — set `NODE_VERSION=22.11.0`, or let Pages read `.nvmrc` |
 
 **Environment variables must be set in the Cloudflare Pages dashboard**, not in
 a committed file. This matters more than it sounds: on Cloudflare, secrets are

@@ -94,11 +94,26 @@ function errorPage(status: number, heading: string, detail: string, backTo: stri
  * visitor would be told to call, and no lead would ever reach the CRM.
  */
 function resolveEnv(locals: App.Locals): Record<string, string | undefined> {
-  const runtimeEnv = (locals as { runtime?: { env?: Record<string, unknown> } })?.runtime?.env;
-  return {
+  const merged: Record<string, string | undefined> = {
     ...(import.meta.env as unknown as Record<string, string | undefined>),
-    ...(runtimeEnv as Record<string, string | undefined> | undefined),
   };
+
+  // Properly typed via `src/env.d.ts`, so a typo here is a compile error rather
+  // than an undefined that silently disables the CRM.
+  //
+  // Copied key by key rather than spread: Cloudflare's runtime env also carries
+  // non-string bindings — `ASSETS` is a fetcher object, and KV/R2 bindings would
+  // be objects too. Spreading passed those straight into the adapters as if they
+  // were configuration. Typing this properly is what surfaced it; the previous
+  // inline cast hid it.
+  const runtimeEnv = locals.runtime?.env;
+  if (runtimeEnv) {
+    for (const [key, value] of Object.entries(runtimeEnv)) {
+      if (typeof value === 'string') merged[key] = value;
+    }
+  }
+
+  return merged;
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
