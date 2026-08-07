@@ -6,9 +6,9 @@
   "compilerOptions": {
     "strictNullChecks": true,
     "allowJs": true,
-    "baseUrl": ".",
+    "//paths": "Resolved relative to this file. `baseUrl` was removed — it is deprecated in TypeScript 6 and stops working in 7, and since TS 5.0 `paths` no longer needs it.",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   }
 }
